@@ -90,6 +90,13 @@
 - **Multimodal Visual Grounding:** Coordinates real-time screen captures, UI element bounding boxes, and OCR target recognition.
 - **Safety Confirmation Gates:** Critical disk, filesystem, or network operations trigger interactive UI confirmation dialogues before execution.
 
+### ⚡ Antigravity IDE Direct Input & Terminal Bridge
+- **Direct Prompt Injection:** Programmatically inserts prompts into Antigravity IDE's active chat window (`insert_prompt_to_chat(prompt_text, submit=True)`), typing and submitting as if typed by the user.
+- **Integrated Terminal Execution:** Programmatically sends and executes commands in Antigravity IDE's built-in terminal (`execute_terminal_command(command_text)`).
+- **Voice-Activated IDE Control:** Autonomous voice commands through JARVIS (*"Hey Jarvis, ask Antigravity to write unit tests"* or *"Hey Jarvis, run git status in Antigravity terminal"*).
+- **Universal REST Bridge:** Integrated local HTTP server (`http://127.0.0.1:24680`) exposing `POST /api/chat` and `POST /api/terminal` for multi-language scripts and external tools.
+- **Desktop Companion GUI:** Single-click desktop tool (`JARVIS Antigravity Input.lnk`) for rapid prompt delivery and terminal command execution.
+
 ---
 
 ## 🔄 What's New in Mark LVI
@@ -114,6 +121,12 @@ Mark LVI untethers the assistant from proprietary cloud locks:
 ### 4. Background Automation & Dispatch Tools
 - Added [`plugins/github_manager.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/github_manager.py) for autonomous repository inspection, issue review, and pull request tracking.
 - Added [`plugins/file_dispatcher.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/file_dispatcher.py) and [`plugins/desktop_downloader.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/desktop_downloader.py) for workspace organization and download automation.
+
+### 5. Antigravity IDE Direct Input Channel & Automation Bridge
+- Added [`antigravity_ide_api.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/antigravity_ide_api.py) delivering `insert_prompt_to_chat` and `execute_terminal_command`.
+- Added [`plugins/antigravity_bridge.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/plugins/antigravity_bridge.py) allowing JARVIS to control Antigravity IDE directly via voice.
+- Added [`tools/antigravity_input_gui.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/tools/antigravity_input_gui.py) and desktop shortcut `JARVIS Antigravity Input.lnk` for instant desktop execution.
+- Integrated background REST HTTP server (`http://127.0.0.1:24680`) for cross-language automation.
 
 ---
 
@@ -226,15 +239,57 @@ Mark-LVI/
 │   ├── wake_word.py          # Offline openwakeword keyword detection
 │   └── viseme.py             # Formant-to-mouth phoneme mapping engine
 ├── plugins/                  # Extensible plugins and developer tools
+│   ├── antigravity_bridge.py # Antigravity IDE voice interaction bridge
 │   ├── github_manager.py     # GitHub workflow automation and repository inspection
 │   ├── file_dispatcher.py    # Autonomous filesystem management
 │   └── desktop_downloader.py # Automated file retrieval utilities
+├── tools/                    # Desktop companion tools and launchers
+│   ├── antigravity_input_gui.py # Standalone Antigravity direct input HUD
+│   └── desktop_dispatcher.py # Standalone file dispatcher window
+├── antigravity_ide_api.py    # Core Antigravity IDE programmatic automation API
 ├── dashboard/                # Web & mobile remote companion interface
 ├── launch.bat                # Windows fast console launcher
 ├── run.vbs                   # Silent Windows tray background launcher
 ├── main.py                   # Main entry point and runtime loop
 ├── ui.py                     # PyQt6 user interface, HUD, and system tray
 └── requirements.txt          # Python runtime dependencies
+```
+
+---
+
+## 🔌 Antigravity IDE Direct Input API
+
+MARK LVI includes a full programmatic direct input channel into Google Antigravity IDE:
+
+### Python SDK Example
+```python
+from antigravity_ide_api import insert_prompt_to_chat, execute_terminal_command
+
+# 1. Insert prompt into active chat window as if typed by the user
+insert_prompt_to_chat("Analyze the system architecture of MARK LVI", submit=True)
+
+# 2. Execute a command in Antigravity IDE's integrated terminal
+execute_terminal_command("git status", submit=True)
+```
+
+### Local HTTP REST API Bridge
+Launch a local background server (`http://127.0.0.1:24680`) for language-agnostic automation:
+
+```python
+import antigravity_ide_api
+antigravity_ide_api.start_api_server(port=24680, background=True)
+```
+
+```bash
+# Submit prompt to Antigravity Chat over REST:
+curl -X POST http://127.0.0.1:24680/api/chat \
+     -H "Content-Type: application/json" \
+     -d '{"prompt_text": "Write a unit test for plugins/antigravity_bridge.py", "submit": true}'
+
+# Execute terminal command over REST:
+curl -X POST http://127.0.0.1:24680/api/terminal \
+     -H "Content-Type: application/json" \
+     -d '{"command_text": "pytest -v", "submit": true}'
 ```
 
 ---
