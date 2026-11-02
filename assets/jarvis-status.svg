@@ -1,0 +1,79 @@
+<svg width="850" height="120" viewBox="0 0 850 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#071324" stop-opacity="0.98" />
+      <stop offset="100%" stop-color="#050a14" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="border-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="50%" stop-color="#4facfe" />
+      <stop offset="100%" stop-color="#00c6ff" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pulse {
+      0% { r: 6px; opacity: 1; }
+      50% { r: 12px; opacity: 0; }
+      100% { r: 6px; opacity: 1; }
+    }
+    @keyframes scanline {
+      0% { transform: translateY(0); opacity: 0.15; }
+      50% { opacity: 0.35; }
+      100% { transform: translateY(118px); opacity: 0.15; }
+    }
+    @keyframes wave {
+      0%, 100% { height: 10px; y: 65px; }
+      50% { height: 28px; y: 47px; }
+    }
+    .pulsing-ring {
+      animation: pulse 2s infinite ease-out;
+      transform-origin: 40px 42px;
+    }
+    .wave-bar-1 { animation: wave 1.2s infinite ease-in-out; }
+    .wave-bar-2 { animation: wave 0.9s infinite ease-in-out 0.2s; }
+    .wave-bar-3 { animation: wave 1.4s infinite ease-in-out 0.4s; }
+    .wave-bar-4 { animation: wave 0.8s infinite ease-in-out 0.1s; }
+    .wave-bar-5 { animation: wave 1.1s infinite ease-in-out 0.3s; }
+  </style>
+
+  <!-- Container Box -->
+  <rect x="1" y="1" width="848" height="118" rx="14" fill="url(#bg-grad)" stroke="url(#border-glow)" stroke-width="1.5" />
+
+  <!-- Animated Radar Pulse Dot -->
+  <circle cx="40" cy="42" r="6" fill="#00f2fe" filter="url(#glow)" />
+  <circle cx="40" cy="42" r="6" fill="none" stroke="#00f2fe" stroke-width="2" class="pulsing-ring" />
+
+  <!-- Title & Status Header -->
+  <text x="65" y="47" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff" letter-spacing="1.5">
+    JARVIS MARK LVI <tspan fill="#00f2fe" font-weight="600" font-size="14"> // SYSTEM STATUS : ONLINE</tspan>
+  </text>
+
+  <!-- Subtitle Meta -->
+  <text x="65" y="75" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#8ca0ba">
+    ENGINE: <tspan fill="#38ef7d" font-weight="600">Gemini 3.1 Flash Live (Native Audio)</tspan>  •  WAKE WORD: <tspan fill="#00f2fe">"Hey Jarvis" (Offline OpenWakeWord)</tspan>
+  </text>
+  <text x="65" y="96" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#8ca0ba">
+    CONTROL: <tspan fill="#ffd166">Autonomous Windows/Web Execution</tspan>  •  LATENCY: <tspan fill="#38ef7d">&lt; 320ms Real-Time</tspan>
+  </text>
+
+  <!-- Live Audio Waveform Graphic on Right -->
+  <g transform="translate(680, 0)">
+    <text x="0" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#64748b" letter-spacing="1">AUDIO STREAM</text>
+    <rect class="wave-bar-1" x="10" y="65" width="4" height="12" rx="2" fill="#00f2fe" />
+    <rect class="wave-bar-2" x="22" y="55" width="4" height="22" rx="2" fill="#00f2fe" />
+    <rect class="wave-bar-3" x="34" y="48" width="4" height="30" rx="2" fill="#4facfe" />
+    <rect class="wave-bar-4" x="46" y="52" width="4" height="25" rx="2" fill="#00f2fe" />
+    <rect class="wave-bar-5" x="58" y="60" width="4" height="18" rx="2" fill="#38ef7d" />
+    <rect class="wave-bar-2" x="70" y="50" width="4" height="26" rx="2" fill="#00f2fe" />
+    <rect class="wave-bar-1" x="82" y="62" width="4" height="14" rx="2" fill="#4facfe" />
+    <rect class="wave-bar-3" x="94" y="56" width="4" height="20" rx="2" fill="#00f2fe" />
+    <rect class="wave-bar-4" x="106" y="66" width="4" height="10" rx="2" fill="#38ef7d" />
+    <rect class="wave-bar-2" x="118" y="58" width="4" height="16" rx="2" fill="#00f2fe" />
+  </g>
+</svg>
