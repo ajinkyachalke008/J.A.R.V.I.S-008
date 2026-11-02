@@ -33,9 +33,16 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QBrush, QColor, QConicalGradient, QDragEnterEvent, QDropEvent, QFont,
-    QFontDatabase, QKeySequence, QLinearGradient, QPainter, QPainterPath,
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPainter, QPainterPath,
     QPen, QPixmap, QRadialGradient, QShortcut,
 )
+
+if platform.system() == "Windows":
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("fatihmakes.marklvi.assistant.56")
+    except Exception:
+        pass
 # Video playback for the HUD. Part of PyQt6, so it costs no new dependency —
 # but the multimedia plugins are a separate piece of the Qt install and can be
 # absent on a stripped-down system, so a failure here disables one feature
@@ -49,11 +56,13 @@ except Exception as _e:            # noqa: BLE001 - reported, never fatal
     HAVE_VIDEO = False
     print(f"[Video] playback unavailable ({_e}) — the HUD will not show video.")
 
+from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
     QMainWindow, QPushButton, QScrollArea, QSizePolicy, QSplitter,
     QGraphicsScene, QGraphicsView,
     QStackedWidget, QTextEdit, QVBoxLayout, QWidget, QProgressBar, QSlider,
+    QSystemTrayIcon, QMenu,
 )
 
 try:
@@ -4269,6 +4278,9 @@ class MainWindow(QMainWindow):
             apply_ui_accent(_ui_color)
 
         self.setWindowTitle(f"{_display} — {APP_VERSION}")
+        _ico_f = CONFIG_DIR / "jarvis.ico"
+        if _ico_f.exists():
+            self.setWindowIcon(QIcon(str(_ico_f)))
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(_DEFAULT_W, _DEFAULT_H)
 
@@ -4557,6 +4569,9 @@ class MainWindow(QMainWindow):
         sc_full.activated.connect(self._toggle_fullscreen)
         sc_intr = QShortcut(QKeySequence("Escape"), self)
         sc_intr.activated.connect(self._do_interrupt)
+
+        # Bottom bar System Tray Icon with JARVIS logo
+        self._init_system_tray()
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -6894,6 +6909,120 @@ class MainWindow(QMainWindow):
     def _apply_state(self, state: str):
         self.hud.state    = state
         self.hud.speaking = (state == "SPEAKING")
+        if hasattr(self, "_tray_icon") and self._tray_icon:
+            desc = "Sleeping (say 'Hey Jarvis')" if state == "SLEEPING" else state.capitalize()
+            self._tray_icon.setToolTip(f"JARVIS — {desc}")
+
+    def _init_system_tray(self):
+        """Initialise visible logo icon in Windows taskbar system tray at bottom of screen."""
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            self._tray_icon = None
+            return
+
+        _ico_f = CONFIG_DIR / "jarvis.ico"
+        icon = QIcon(str(_ico_f)) if _ico_f.exists() else self.windowIcon()
+
+        self._tray_icon = QSystemTrayIcon(icon, self)
+        self._tray_icon.setToolTip("JARVIS — MARK LVI (Online)")
+
+        menu = QMenu()
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: #050b14;
+                color: #e0f2fe;
+                border: 1px solid {C.PRI};
+                border-radius: 6px;
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 12px;
+                padding: 6px;
+            }}
+            QMenu::item {{
+                padding: 6px 24px 6px 12px;
+                border-radius: 4px;
+            }}
+            QMenu::item:selected {{
+                background-color: {C.PRI};
+                color: #050b14;
+            }}
+            QMenu::separator {{
+                height: 1px;
+                background: #1e293b;
+                margin: 4px 0;
+            }}
+        """)
+
+        act_show = QAction("👁️  Show / Hide HUD", self)
+        act_show.triggered.connect(self._toggle_window_visibility)
+        menu.addAction(act_show)
+
+        act_wake = QAction("⚡  Wake / Sleep", self)
+        act_wake.triggered.connect(self._tap_wake_manual)
+        menu.addAction(act_wake)
+
+        act_mute = QAction("🔇  Mute / Unmute", self)
+        act_mute.triggered.connect(self._toggle_mute)
+        menu.addAction(act_mute)
+
+        menu.addSeparator()
+
+        act_exit = QAction("❌  Exit JARVIS", self)
+        act_exit.triggered.connect(self._force_quit)
+        menu.addAction(act_exit)
+
+        self._tray_icon.setContextMenu(menu)
+        self._tray_icon.activated.connect(self._on_tray_activated)
+        self._tray_icon.show()
+        def _show_toast():
+            try:
+                if hasattr(self, "_tray_icon") and self._tray_icon and self._tray_icon.isVisible():
+                    self._tray_icon.showMessage(
+                        "JARVIS — MARK LVI",
+                        "JARVIS is online. System tray icon is active at bottom bar.",
+                        QSystemTrayIcon.MessageIcon.Information,
+                        2500,
+                    )
+            except Exception:
+                pass
+        QTimer.singleShot(1500, _show_toast)
+
+    def _toggle_window_visibility(self):
+        if self.isVisible() and not self.isMinimized():
+            self.hide()
+        else:
+            self.show()
+            self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized | Qt.WindowState.WindowActive)
+            self.raise_()
+            self.activateWindow()
+            if platform.system() == "Windows":
+                try:
+                    import ctypes
+                    ctypes.windll.user32.SetForegroundWindow(int(self.winId()))
+                except Exception:
+                    pass
+
+    def _on_tray_activated(self, reason):
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger, QSystemTrayIcon.ActivationReason.DoubleClick):
+            self._toggle_window_visibility()
+
+    def _force_quit(self):
+        if hasattr(self, "_tray_icon") and self._tray_icon:
+            self._tray_icon.hide()
+        QApplication.quit()
+
+    def closeEvent(self, event):
+        # When closed with 'X', keep running in background with visible logo in taskbar tray
+        if hasattr(self, "_tray_icon") and self._tray_icon and self._tray_icon.isVisible():
+            self.hide()
+            self._tray_icon.showMessage(
+                "JARVIS — Running in Background",
+                "JARVIS is listening for 'Hey Jarvis'. Click the tray icon at the bottom bar to reopen.",
+                QSystemTrayIcon.MessageIcon.Information,
+                2500
+            )
+            event.ignore()
+        else:
+            event.accept()
+
 
     def _check_config(self) -> bool:
         if not API_FILE.exists(): return False
@@ -6944,9 +7073,20 @@ class JarvisUI:
     def __init__(self, face_path: str, size=None):
         self._app = QApplication.instance() or QApplication(sys.argv)
         self._app.setStyle("Fusion")
+        _ico_f = CONFIG_DIR / "jarvis.ico"
+        if _ico_f.exists():
+            self._app.setWindowIcon(QIcon(str(_ico_f)))
         self._win = MainWindow(face_path)
         self.root = _RootShim(self._app)
         self._win.show()
+        self._win.raise_()
+        self._win.activateWindow()
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                ctypes.windll.user32.SetForegroundWindow(int(self._win.winId()))
+            except Exception:
+                pass
 
     @property
     def muted(self) -> bool:

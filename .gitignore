@@ -1,25 +1,29 @@
-# ── MARK LVI — what never belongs in the repository ──────────────────────────
-# Everything listed here is created by the app on first run. A fresh clone with
-# none of it present boots straight to the setup screen, which is the intended
-# first experience — so nothing here needs to be committed, and some of it must
-# never be.
+# MARK LVI - what never belongs in the repository
+# Everything listed here is created by the app on first run.
 
-# ── Secrets. Committing any of these publishes them. ──────────────────────────
-config/api_keys.json          # your Gemini API key, plus per-plugin credentials
-config/certs/                 # the dashboard's TLS private key and certificate
-config/whatsapp_web/          # a LINKED WhatsApp session — committing it hands
-                              # somebody your WhatsApp account, not just a key
-**/token*.json                # Google OAuth tokens (Gmail / Calendar plugins)
-**/client_secret*.json        # Google OAuth client secrets
+# Secrets. Committing any of these publishes them.
+# your Gemini API key, plus per-plugin credentials
+config/api_keys.json
+# the dashboard's TLS private key and certificate
+config/certs/
+# a LINKED WhatsApp session
+config/whatsapp_web/
+# Google OAuth tokens (Gmail / Calendar plugins)
+**/token*.json
+# Google OAuth client secrets
+**/client_secret*.json
 *credentials*.json
 .env
 .env.*
 
-# ── Personal data the assistant accumulates about you ─────────────────────────
+# Executables and binaries
+*.exe
+
+# Personal data the assistant accumulates about you
 memory/long_term.json
 memory/*.db
 
-# ── Python build noise ────────────────────────────────────────────────────────
+# Python build noise
 __pycache__/
 *.py[cod]
 *$py.class
@@ -29,13 +33,13 @@ dist/
 *.egg-info/
 .eggs/
 
-# ── Virtual environments ──────────────────────────────────────────────────────
+# Virtual environments
 .venv/
 venv/
 env/
 ENV/
 
-# ── Editors and operating systems ─────────────────────────────────────────────
+# Editors and operating systems
 .vscode/
 .idea/
 *.swp
@@ -43,7 +47,7 @@ ENV/
 Thumbs.db
 desktop.ini
 
-# ── Runtime output ────────────────────────────────────────────────────────────
+# Runtime output
 *.log
 logs/
 downloads/

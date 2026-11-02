@@ -741,23 +741,34 @@ def request_close(match: Match, timeout: float = 6.0) -> tuple[bool, str]:
 
 
 def _hwnds_for(pid: int) -> list[int]:
-    """Visible top-level window handles belonging to one process (Windows)."""
+    """Visible top-level window handles belonging to one process or its process family (Windows)."""
     if _OS != "Windows":
         return []
     try:
         import ctypes
         from ctypes import wintypes
+        import psutil
 
         user32 = ctypes.WinDLL("user32", use_last_error=True)
         found: list[int] = []
         WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND,
                                          wintypes.LPARAM)
 
+        related_pids = {pid}
+        try:
+            p = psutil.Process(pid)
+            p_name = p.name().lower()
+            for sib in psutil.process_iter(['pid', 'name']):
+                if sib.info['name'] and sib.info['name'].lower() == p_name:
+                    related_pids.add(sib.info['pid'])
+        except Exception:
+            pass
+
         def _collect(hwnd, _lparam):
-            if user32.IsWindowVisible(hwnd):
+            if user32.IsWindowVisible(hwnd) or user32.IsIconic(hwnd):
                 owner = wintypes.DWORD()
                 user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
-                if int(owner.value) == pid:
+                if int(owner.value) in related_pids:
                     found.append(int(hwnd))
             return True
 
@@ -813,11 +824,25 @@ def focus(match: "Match") -> bool:
             # input queue for the length of the call: while two threads share
             # one queue, Windows treats them as the same context and allows the
             # change. Attach, raise, detach.
+            HWND_TOPMOST = -1
+            HWND_NOTOPMOST = -2
+            SWP_NOMOVE = 0x0002
+            SWP_NOSIZE = 0x0001
+            SWP_SHOWWINDOW = 0x0040
+
             def _raise(hwnd) -> bool:
-                if user32.IsIconic(hwnd):
-                    user32.ShowWindow(hwnd, SW_RESTORE)
-                if user32.SetForegroundWindow(hwnd):
-                    return True
+                try:
+                    if user32.IsIconic(hwnd):
+                        user32.ShowWindow(hwnd, SW_RESTORE)
+                    else:
+                        user32.ShowWindow(hwnd, 5) # SW_SHOW
+                    user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
+                    user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
+                    user32.BringWindowToTop(hwnd)
+                    if user32.SetForegroundWindow(hwnd):
+                        return True
+                except Exception:
+                    pass
 
                 fore = user32.GetForegroundWindow()
                 if not fore:

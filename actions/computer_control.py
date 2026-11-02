@@ -29,6 +29,16 @@ def _configure_pyautogui(module) -> None:
     """Settings that used to sit beside the import, run once when it happens."""
     module.FAILSAFE = True
     module.PAUSE    = 0.05
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            try:
+                import ctypes
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception:
+                pass
 
 
 pyautogui = LazyModule("pyautogui", _configure_pyautogui)

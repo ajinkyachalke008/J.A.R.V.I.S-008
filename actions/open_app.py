@@ -263,6 +263,10 @@ def _launch_and_verify(player, spoken: str, launcher_name: str,
             spoken, before, timeout=_LAUNCH_TIMEOUT
         )
         if appeared is not None:
+            try:
+                appidentity.focus(appeared)
+            except Exception:
+                pass
             _log(player, f"JARVIS: {appeared.label} is open.")
             return
 

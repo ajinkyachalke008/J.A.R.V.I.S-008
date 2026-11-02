@@ -474,6 +474,18 @@ def _open_native(url: str, browser_name: Optional[str]) -> str:
                     [exe, url] if url else [exe],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 )
+                if _OS == "Windows":
+                    def _pop_front():
+                        import time
+                        time.sleep(0.6)
+                        try:
+                            from core import appidentity
+                            for m in appidentity.running(name or "chrome"):
+                                if appidentity.focus(m):
+                                    break
+                        except Exception:
+                            pass
+                    threading.Thread(target=_pop_front, daemon=True).start()
                 return f"Opened in {name}: {url}" if url else f"Opened {name}."
             except Exception as e:
                 print(f"[Browser] Native launch failed for {name}: {e}")
@@ -883,27 +895,89 @@ class _BrowserSession:
 
     async def smart_click(self, description: str) -> str:
         page = await self._get_page()
+
+        # Clean meta-descriptions like "play button on 'Mix - Electronic music' thumbnail"
+        clean_desc = description
+        quoted = re.search(r"['\"`]([^'\"`]+)['\"`]", description)
+        if quoted:
+            clean_desc = quoted.group(1).strip()
+        else:
+            clean_desc = re.sub(
+                r"(?i)(play button on the|play button on|play button|thumbnail of the|thumbnail of|thumbnail|video|play)",
+                "",
+                description
+            ).strip(" :'-_\"") or description
+
+        async def _try_click_locator(loc, label: str) -> bool:
+            try:
+                cnt = await loc.count()
+                if cnt == 0:
+                    return False
+                el = loc.first
+                # 1. Standard click
+                try:
+                    await el.click(timeout=3_000)
+                    return True
+                except Exception:
+                    pass
+                # 2. Force click to bypass overlay pointer-interception
+                try:
+                    await el.click(force=True, timeout=2_000)
+                    return True
+                except Exception:
+                    pass
+                # 3. Direct JavaScript DOM dispatch
+                try:
+                    await el.evaluate("e => (e.closest('a, button') || e).click()")
+                    return True
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            return False
+
+        # 1. YouTube specific element matching
+        is_yt = "youtube.com" in (page.url or "").lower()
+        if is_yt and clean_desc:
+            yt_selectors = [
+                f'ytd-rich-item-renderer:has-text("{clean_desc}") a#thumbnail',
+                f'ytd-rich-item-renderer:has-text("{clean_desc}") a#video-title',
+                f'ytd-video-renderer:has-text("{clean_desc}") a#thumbnail',
+                f'ytd-video-renderer:has-text("{clean_desc}") a#video-title',
+                f'ytd-compact-video-renderer:has-text("{clean_desc}") a#thumbnail',
+                f'ytd-compact-video-renderer:has-text("{clean_desc}") a#video-title',
+                f'ytd-playlist-thumbnail:has-text("{clean_desc}") a#thumbnail',
+                f'a#video-title[title*="{clean_desc}" i]',
+                f'a#video-title[aria-label*="{clean_desc}" i]',
+                f'a#thumbnail[aria-label*="{clean_desc}" i]',
+                f'ytd-thumbnail:has-text("{clean_desc}")',
+            ]
+            for sel in yt_selectors:
+                if await _try_click_locator(page.locator(sel), f"YouTube: {sel}"):
+                    return f"Clicked YouTube video: '{clean_desc}'"
+
+        # 2. Role-based matching
         for role in ("button", "link", "searchbox", "textbox", "menuitem", "tab"):
-            try:
-                loc = page.get_by_role(role, name=description)
-                if await loc.count() > 0:
-                    await loc.first.click(timeout=5_000)
-                    return f"Clicked ({role}): '{description}'"
-            except Exception:
-                pass
-        for attempt in (
-            lambda: page.get_by_text(description, exact=False).first.click(timeout=5_000),
-            lambda: page.get_by_placeholder(description, exact=False).first.click(timeout=5_000),
-            lambda: page.locator(
-                f'[alt*="{description}" i],[title*="{description}" i],'
-                f'[aria-label*="{description}" i]'
-            ).first.click(timeout=5_000),
-        ):
-            try:
-                await attempt()
-                return f"Clicked: '{description}'"
-            except Exception:
-                pass
+            for candidate in (description, clean_desc):
+                if not candidate:
+                    continue
+                loc = page.get_by_role(role, name=candidate)
+                if await _try_click_locator(loc, f"role {role}"):
+                    return f"Clicked ({role}): '{candidate}'"
+
+        # 3. Text and attribute based matching
+        for text_target in set([description, clean_desc]):
+            if not text_target:
+                continue
+            attempts = [
+                page.get_by_text(text_target, exact=False),
+                page.get_by_placeholder(text_target, exact=False),
+                page.locator(f'[alt*="{text_target}" i],[title*="{text_target}" i],[aria-label*="{text_target}" i]'),
+            ]
+            for loc in attempts:
+                if await _try_click_locator(loc, "attribute/text"):
+                    return f"Clicked: '{text_target}'"
+
         return f"Could not find element: '{description}'"
 
     async def smart_type(self, description: str, text: str) -> str:

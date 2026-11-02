@@ -1,16 +1,32 @@
 import platform as _platform
 import subprocess as _subprocess
 
-# ── Nuclear: force CREATE_NO_WINDOW on EVERY subprocess call on Windows ───────
-# This patches Popen itself, so no per-file flag is needed anywhere.
+# ── Smart subprocess launcher on Windows ───────────────────────────────────────
+# Suppress black console popups for background CLI/console tools, but PRESERVE
+# visible desktop GUI windows for interactive applications and web browsers.
 if _platform.system() == "Windows":
     _OrigPopen = _subprocess.Popen
 
     class _Popen(_OrigPopen):
         def __init__(self, args, **kw):
-            kw["creationflags"] = kw.get("creationflags", 0) | _subprocess.CREATE_NO_WINDOW
-            kw.pop("startupinfo", None)   # drop any stale/shared STARTUPINFO
-            super().__init__(args, **                       kw)
+            # Check if this command is launching a GUI application or browser
+            cmd_str = ""
+            if isinstance(args, (list, tuple)) and args:
+                cmd_str = str(args[0]).lower()
+            elif isinstance(args, str):
+                cmd_str = args.lower()
+
+            # Known GUI applications that MUST have visible windows
+            is_gui = any(app in cmd_str for app in (
+                "chrome", "msedge", "firefox", "brave", "opera", "vivaldi",
+                "notepad", "calc", "explorer", "spotify", "code"
+            ))
+
+            if not is_gui and "creationflags" not in kw:
+                kw["creationflags"] = _subprocess.CREATE_NO_WINDOW
+                kw.pop("startupinfo", None)
+
+            super().__init__(args, **kw)
 
     _subprocess.Popen = _Popen
 
@@ -28,7 +44,7 @@ for _stream in ("stdout", "stderr"):
     try:
         _s = getattr(_sys, _stream, None)
         if _s is not None and hasattr(_s, "reconfigure"):
-            _s.reconfigure(encoding="utf-8", errors="replace")
+            _s.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
     except Exception:
         pass          # pythonw / redirected pipes / anything exotic — never fatal
 
@@ -44,6 +60,11 @@ import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
+
+# Ensure Mark-LVI directory is always on sys.path
+_MARK_LVI_DIR = str(Path(__file__).resolve().parent)
+if _MARK_LVI_DIR not in sys.path:
+    sys.path.insert(0, _MARK_LVI_DIR)
 
 import sounddevice as sd
 import numpy as np
@@ -743,6 +764,11 @@ class JarvisLive:
         if not self.ui.muted:
             self.ui.set_state("LISTENING")
         self.ui.write_log(f"SYS: Awake — {reason}.")
+        if reason == "wake word":
+            try:
+                self.plugin_say("The user just woke you up with Hey Jarvis. Acknowledge briefly and politely: 'Yes, sir?' or 'At your service, sir.'")
+            except Exception:
+                pass
 
     def sleep(self, reason: str = "timeout") -> None:
         if not self._awake:
@@ -1323,38 +1349,38 @@ class JarvisLive:
             elif name == "screen_process":
                 import time as _t_mod
                 _now = _t_mod.monotonic()
-                _cooldown = 4.0  # seconds — covers echo window after speaking ends
-                if self._vision_busy or (_now - self._vision_last_time) < _cooldown:
-                    _wait = max(0, _cooldown - (_now - self._vision_last_time))
-                    print(f"[Vision] ⏳ Cooldown active ({_wait:.1f}s remaining) — ignoring duplicate call")
-                    result = "Vision is still processing the previous request. I will not call this again."
+                _cooldown = 1.5  # reduced cooldown
+                if self._vision_busy and (_now - self._vision_last_time) < _cooldown:
+                    print(f"[Vision] ⏳ Vision capture already in flight — skipping duplicate")
+                    result = "Vision is still processing the previous request. Please wait a moment."
                 else:
                     self._vision_busy      = True
                     self._vision_last_time = _now
                     angle     = args.get("angle", "screen").lower()
                     user_text = args.get("text", "What do you see?")
-                    if angle == "camera":
-                        img_b, mime_t = await loop.run_in_executor(None, _capture_camera)
-                        self.ui.start_camera_stream()
-                        self._vision_cam_active = True
-                        print(f"[Vision] 📷 Camera: {len(img_b):,} bytes")
-                        _stall = "camera"
-                    else:
-                        img_b, mime_t = await loop.run_in_executor(None, _capture_screen)
-                        print(f"[Vision] 🖥️  Screen: {len(img_b):,} bytes")
-                        _stall = "screen"
-                    self._pending_vision = (img_b, mime_t, user_text, angle)
-                    # The image is attached to this same exchange, so there is
-                    # nothing to stall for and nothing to announce. Asking for an
-                    # acknowledgement here is what produced two spoken answers —
-                    # the model filled that turn by answering the question from
-                    # imagination, then answered it again once it could see.
-                    result = (
-                        f"[VISION_ACTIVE] {_stall.capitalize()} captured and attached to this "
-                        f"same exchange. Do not acknowledge and do not answer yet — the image "
-                        f"is arriving with this result. Reply once, from what you actually see "
-                        f"in it."
-                    )
+                    try:
+                        if angle == "camera":
+                            img_b, mime_t = await loop.run_in_executor(None, _capture_camera)
+                            self.ui.start_camera_stream()
+                            self._vision_cam_active = True
+                            print(f"[Vision] 📷 Camera: {len(img_b):,} bytes")
+                            _stall = "camera"
+                        else:
+                            img_b, mime_t = await loop.run_in_executor(None, _capture_screen)
+                            print(f"[Vision] 🖥️  Screen: {len(img_b):,} bytes")
+                            _stall = "screen"
+                        self._pending_vision = (img_b, mime_t, user_text, angle)
+                        result = (
+                            f"[VISION_ACTIVE] {_stall.capitalize()} captured and attached to this "
+                            f"same exchange. Do not acknowledge and do not answer yet — the image "
+                            f"is arriving with this result. Reply once, from what you actually see "
+                            f"in it."
+                        )
+                    except Exception as _v_err:
+                        self._vision_busy = False
+                        self._pending_vision = None
+                        print(f"[Vision] ❌ Capture failed: {_v_err}")
+                        result = f"I could not capture the {angle} right now: {_v_err}."
 
             elif name == "close_camera":
                 self.ui.stop_camera_stream()
@@ -2446,6 +2472,12 @@ class JarvisLive:
                         self._awake = False
                         self.ui.set_state("SLEEPING")
                         self.ui.write_log("SYS: JARVIS online — sleeping. Say 'Hey Jarvis' to wake me.")
+                        if not getattr(self, "_boot_announced", False):
+                            self._boot_announced = True
+                            try:
+                                self.plugin_say("Say exactly: 'JARVIS systems online. Say Hey Jarvis to wake me.'")
+                            except Exception:
+                                pass
                     else:
                         self._awake = True
                         self.ui.set_state("LISTENING")
@@ -2632,6 +2664,37 @@ class JarvisLive:
             await asyncio.sleep(delay)
 
 def main():
+    if _platform.system() == "Windows":
+        try:
+            import ctypes
+            from ctypes import wintypes
+            user32 = ctypes.windll.user32
+            kernel32 = ctypes.windll.kernel32
+            ERROR_ALREADY_EXISTS = 183
+            mutex = kernel32.CreateMutexW(None, False, "Local\\JARVIS_MARK_LVI_SINGLETON")
+            if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+                print("[JARVIS] An instance is already running. Raising existing window...")
+                def _enum_cb(hwnd, extra):
+                    length = user32.GetWindowTextLengthW(hwnd)
+                    if length > 0:
+                        buf = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(hwnd, buf, length + 1)
+                        txt = buf.value.strip().replace('\u2014', '-')
+                        # Strict match: must start with "JARVIS - MARK" and exclude IDEs/text editors
+                        if txt.startswith("JARVIS - MARK") or txt == "JARVIS - MARK LVI":
+                            lower = txt.lower()
+                            if not any(bad in lower for bad in ("antigravity", "visual studio", ".md", ".py", ".txt", ".json", "chrome", "edge")):
+                                user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+                                user32.SetForegroundWindow(hwnd)
+                                return False
+                    return True
+                WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+                user32.EnumWindows(WNDENUMPROC(_enum_cb), 0)
+                _sys.exit(0)
+            globals()["_SINGLETON_MUTEX"] = mutex
+        except Exception as e:
+            print(f"[JARVIS] Singleton check error: {e}")
+
     ui = JarvisUI("face.png")
 
     def runner():
