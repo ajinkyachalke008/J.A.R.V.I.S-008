@@ -5,7 +5,7 @@
 <img src="assets/jarvis-logo.png" width="170" height="170" alt="JARVIS Mark-LVI Logo" style="border-radius: 50%;" />
 
 <p align="center">
-  <strong>Autonomous Multimodal AI Desktop Assistant • Real-Time Voice • 3D Holographic Avatar • Computer Control</strong>
+  <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Universal Creation Studio • Real-Time Voice</strong>
 </p>
 
 [![Status](https://img.shields.io/badge/System_Status-OPERATIONAL-00f2fe?style=for-the-badge&logo=statuspage&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
@@ -84,11 +84,31 @@
 - **Acoustic Self-Echo Cancellation:** Adaptive reference subtractor distinguishes your speech from the assistant's own synthesized voice in real time.
 - **Instant Latency Masking:** Synthesizes low-latency immediate audio acknowledgments in the user's spoken language while complex reasoning plans compute.
 
-### 🖥️ Verified Autonomous Computer Control
+### 🖥️ Verified Autonomous Computer Control & Perception
 - **Observation-Driven Action:** Tools report observed ground-truth rather than simple invocation state (`done` indicates verified UI state, `unverified` signifies an unconfirmed attempt).
-- **Multi-Process Foreground Focus:** Inspects complete Windows process hierarchies and raises launched apps (like Google Chrome) to `HWND_TOPMOST` foreground visibility.
-- **Multimodal Visual Grounding:** Coordinates real-time screen captures, UI element bounding boxes, and OCR target recognition.
-- **Safety Confirmation Gates:** Critical disk, filesystem, or network operations trigger interactive UI confirmation dialogues before execution.
+- **Multi-Process Foreground Focus:** Inspects complete Windows process hierarchies and raises launched apps to `HWND_TOPMOST` foreground visibility.
+- **Multimodal Visual Grounding:** Coordinates real-time multi-monitor screen captures, UI element bounding boxes, and OCR target recognition with 25px centroid element snapping.
+- **Human-Like Bézier Movement:** Generates parametric cubic Bézier mouse curves with micro-jitter, hover-settle delays, and Unicode clipboard typing fallbacks.
+- **Pre/Post Action Verification:** Calculates visual pixel deltas and focus shifts before reporting results via `core.outcome`.
+
+### 🛡️ Full Desktop Access & Fail-Safe Emergency Stop
+- **Explicit Authorized Sessions:** Desktop automation is locked behind an explicit permission gate (`DesktopAccessState.CONTROL_ENABLED`).
+- **Granular Security Scopes:** Independent permission gates for `SCREEN_CAPTURE`, `MOUSE_MOVE`, `MOUSE_CLICK`, `KEYBOARD_INPUT`, and `CLIPBOARD_ACCESS`.
+- **Inactivity Watchdogs:** Sessions expire automatically after idle timeouts to ensure unattended machines remain secure.
+- **Redundant Emergency Stop:** Immediate fail-safe halts triggered via `Ctrl+Alt+Escape`, moving cursor rapidly into any screen corner, or clicking the HUD stop button, instantly releasing all held keys and mouse buttons.
+
+### 🔍 Circle-to-Understand (C2U) Visual Interaction
+- **Multi-Monitor Transparent Overlay:** Press `Ctrl+Alt+S` or click `CIRCLE TO EXPLAIN` in the HUD to freeze the desktop across all active monitors.
+- **Freeform Lasso & Box Selection:** Circle, loop, or drag a rectangle around any UI element, diagram, code snippet, or error message.
+- **Multimodal Context Explanation:** Crops the selected region with high fidelity and dispatches it directly to the Gemini vision pipeline, streaming audible and visual explanations to the HUD.
+
+### 📐 Universal Creation Studio (CAD, Circuits & Workflows)
+- **Native PyQt6 Studio Workspace:** Interactive multi-domain canvas (`StudioWindow`) featuring infinite smooth pan, zoom (0.1x to 25x), and snap-to-grid.
+- **2D Mechanical CAD:** Engineering plate modeling, corner fillets, bolt hole patterns, cutouts, and dimension annotations.
+- **Circuit Schematics:** Electronics schematic generator with component pins, netlist wires, and power regulation circuits.
+- **Workflow Architecture:** Process flowcharts, decision nodes, and autonomous agent loop diagrams.
+- **Multi-Format Exporters:** Export to standard **AutoCAD R12/2000 ASCII DXF**, scalable **SVG**, 300 DPI **PNG**, and native **JSON**.
+- **Demonstrator Project Included:** Precision mechanical mounting plate ($120\text{ mm} \times 80\text{ mm}$, corner fillets, 4 M4 holes, center cutout, dimensions) exported directly to `Desktop/JarvisCreations/`.
 
 ### ⚡ Antigravity IDE Direct Input & Terminal Bridge
 - **Direct Prompt Injection:** Programmatically inserts prompts into Antigravity IDE's active chat window (`insert_prompt_to_chat(prompt_text, submit=True)`), typing and submitting as if typed by the user.
@@ -225,6 +245,12 @@ launch.bat
 > [!TIP]
 > For silent background operation on Windows, run [`run.vbs`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/run.vbs). JARVIS will live in your system notification tray.
 
+### 6. Run Automated Verification Suite
+Verify desktop automation, permission gates, CAD demonstrators, and perception systems:
+```bash
+python -m pytest -v tests/
+```
+
 ---
 
 ## 📂 Project Architecture
@@ -232,6 +258,8 @@ launch.bat
 ```text
 Mark-LVI/
 ├── actions/                  # Core computer control and automation tools
+│   ├── creation_studio.py    # Universal Creation Studio action (CAD/Circuits/Workflows)
+│   ├── desktop_agent.py      # Autonomous multi-step desktop automation agent
 │   ├── browser_control.py    # Playwright browser driver & foreground window focus
 │   ├── computer_control.py   # Native OS key, mouse, and window orchestration
 │   ├── screen_processor.py   # Desktop visual capture and OCR coordinate mapping
@@ -246,17 +274,48 @@ Mark-LVI/
 │   ├── api_keys.json         # Local credentials and settings (git-ignored)
 │   └── jarvis.ico            # Native Windows application icon
 ├── core/                     # Internal engine logic and multimodal pipelines
+│   ├── desktop/              # Desktop automation, perception & safety framework
+│   │   ├── access_manager.py # State machine, granular permissions, session timeouts
+│   │   ├── emergency_stop.py # Redundant failsafe halts (Ctrl+Alt+Esc, corner flick)
+│   │   ├── monitor_manager.py# Multi-monitor DPI Aware v2 topology manager
+│   │   ├── screen_capture.py # MSS virtual desktop and regional screenshot service
+│   │   ├── ui_automation.py  # Native Windows UI Automation (pywinauto UIA backend)
+│   │   ├── ocr_engine.py     # Multi-engine OCR text detection cascade
+│   │   ├── visual_grounding.py# Coordinate normalization (0..1000) & 25px snapping
+│   │   ├── cursor_controller.py# Cubic Bézier trajectories & human-like typing
+│   │   ├── action_verifier.py# Pre/post action visual delta verification (core.outcome)
+│   │   ├── selection_overlay.py# Transparent Circle-to-Understand PyQt6 overlay
+│   │   └── task_planner.py   # Autonomous multi-step execution loop
+│   ├── studio/               # Universal Creation Studio engineering suite
+│   │   ├── models.py         # Unified CAD, Circuit, and Workflow project schema
+│   │   ├── schema.json       # JSON Schema definition
+│   │   ├── project_manager.py# Project state lifecycle and 30-level undo/redo
+│   │   ├── validator.py      # Geometric and semantic rule validator
+│   │   ├── studio_window.py  # Interactive PyQt6 QGraphicsScene canvas window
+│   │   ├── cad_engine.py     # 2D Mechanical CAD & mounting plate demonstrator
+│   │   ├── circuit_engine.py # Circuit schematic generator & LM2596 regulator
+│   │   ├── workflow_engine.py# Flowcharts & agent loop diagrams
+│   │   └── exporters/        # Multi-format export engine (DXF, SVG, PNG, JSON)
 │   ├── appidentity.py        # Process tree inspector and Z-order focus manager
 │   ├── avatar.py             # Software 3D facial renderer & QPainter engine
 │   ├── avatar_mesh.py        # Canonical 468-vertex 3D facial geometry
 │   ├── gemini.py             # Gemini API client with fallback model ladders
 │   ├── wake_word.py          # Offline openwakeword keyword detection
 │   └── viseme.py             # Formant-to-mouth phoneme mapping engine
+├── docs/                     # Technical architecture documentation
+│   └── desktop-agent-architecture.md # Full Desktop Agent & Studio architectural spec
 ├── plugins/                  # Extensible plugins and developer tools
 │   ├── antigravity_bridge.py # Antigravity IDE voice interaction bridge
 │   ├── github_manager.py     # GitHub workflow automation and repository inspection
 │   ├── file_dispatcher.py    # Autonomous filesystem management
 │   └── desktop_downloader.py # Automated file retrieval utilities
+├── tests/                    # Comprehensive Pytest test suite (21 tests)
+│   ├── test_desktop_access.py
+│   ├── test_emergency_stop.py
+│   ├── test_perception_grounding.py
+│   ├── test_creation_studio.py
+│   ├── test_exporters.py
+│   └── test_security_safeguards.py
 ├── tools/                    # Desktop companion tools and launchers
 │   ├── antigravity_input_gui.py # Standalone Antigravity direct input HUD
 │   ├── desktop_dispatcher.py # Standalone file dispatcher window
@@ -264,6 +323,7 @@ Mark-LVI/
 │   └── github_manager_gui.py # Standalone GitHub repository & cloner tool
 ├── antigravity_ide_api.py    # Core Antigravity IDE programmatic automation API
 ├── dashboard/                # Web & mobile remote companion interface
+├── IMPLEMENTATION_REPORT.md  # Formal Master Implementation Report
 ├── launch.bat                # Windows fast console launcher
 ├── run.vbs                   # Silent Windows tray background launcher
 ├── main.py                   # Main entry point and runtime loop
