@@ -89,3 +89,4 @@ def handle(args: Dict[str, Any], context: Any = None) -> outcome.Outcome:
         return outcome.error(
             f"Unknown action '{action}'. Valid actions are 'insert_prompt' and 'execute_command'."
         )
+

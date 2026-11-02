@@ -474,3 +474,4 @@ if __name__ == "__main__":
         print("Antigravity IDE API Initialized.")
         print(f"Detected IDE Window: {ide_window[1] if ide_window else 'Not currently running'}")
         print("Run with --help to see CLI options or import this module in Python.")
+
