@@ -4262,6 +4262,7 @@ class MainWindow(QMainWindow):
     _quiz_sig       = pyqtSignal(str, object, object)  # (topic, questions, grader)
     _quiz_hide_sig  = pyqtSignal()
     _review_sig     = pyqtSignal(str, str, object, object)  # document review payload
+    _desktop_state_sig = pyqtSignal(str)                   # desktop access state changed
 
     def __init__(self, face_path: str):
         super().__init__()
@@ -4569,6 +4570,15 @@ class MainWindow(QMainWindow):
         sc_full.activated.connect(self._toggle_fullscreen)
         sc_intr = QShortcut(QKeySequence("Escape"), self)
         sc_intr.activated.connect(self._do_interrupt)
+        sc_c2u  = QShortcut(QKeySequence("Ctrl+Alt+S"), self)
+        sc_c2u.activated.connect(self._open_circle_to_understand)
+
+        self._desktop_state_sig.connect(lambda _: self._refresh_desktop_access_btn())
+        try:
+            from core.desktop.access_manager import get_access_manager
+            get_access_manager().register_state_listener(lambda st, d: self._desktop_state_sig.emit(st.value))
+        except Exception:
+            pass
 
         # Bottom bar System Tray Icon with JARVIS logo
         self._init_system_tray()
@@ -5636,6 +5646,20 @@ class MainWindow(QMainWindow):
         self._hud_btn = _row(QPushButton())
         self._hud_btn.clicked.connect(self._toggle_hud_style)
         self._refresh_hud_btn()
+
+        # Desktop Access, Selection & Studio
+        self._desktop_access_btn = _row(QPushButton(), self._BTN_DIM)
+        self._desktop_access_btn.clicked.connect(self._toggle_desktop_access)
+        self._refresh_desktop_access_btn()
+
+        self._c2u_btn = _row(QPushButton("🔍  CIRCLE TO EXPLAIN"), self._BTN_DIM)
+        self._c2u_btn.clicked.connect(self._open_circle_to_understand)
+
+        self._studio_btn = _row(QPushButton("📐  CREATION STUDIO"), self._BTN_PRI)
+        self._studio_btn.clicked.connect(self._open_creation_studio)
+
+        self._emergency_halt_btn = _row(QPushButton("🚨  EMERGENCY STOP [ESC]"), self._BTN_DIM)
+        self._emergency_halt_btn.clicked.connect(self._trigger_emergency_stop)
 
         w.adjustSize()
         return w
@@ -6825,6 +6849,83 @@ class MainWindow(QMainWindow):
         ov.show()
         ov.raise_()
         self._plugin_settings_overlay = ov   # keep a reference so it isn't GC'd
+
+    # ── Desktop Access, Selection & Studio ──────────────────────────────────────────
+
+    def _refresh_desktop_access_btn(self):
+        try:
+            from core.desktop.access_manager import get_access_manager, DesktopAccessState
+            mgr = get_access_manager()
+            st = mgr.state
+            if st == DesktopAccessState.CONTROL_ENABLED:
+                self._desktop_access_btn.setText("🖥️  DESKTOP CONTROL: ON")
+                self._desktop_access_btn.setStyleSheet(f"""
+                    QPushButton {{
+                        background: #002211; color: {C.GREEN};
+                        border: 1px solid {C.GREEN}; border-radius: 3px;
+                        text-align: left; padding: 0 8px;
+                    }}
+                    QPushButton:hover {{ background: #003319; border-color: {C.GREEN}; }}
+                """)
+            elif st == DesktopAccessState.OBSERVE_ONLY:
+                self._desktop_access_btn.setText("👁️  DESKTOP OBSERVE: ON")
+                self._desktop_access_btn.setStyleSheet(self._BTN_PRI)
+            else:
+                self._desktop_access_btn.setText("🖥️  FULL DESKTOP ACCESS: OFF")
+                self._desktop_access_btn.setStyleSheet(self._BTN_DIM)
+        except Exception:
+            pass
+
+    def _toggle_desktop_access(self):
+        try:
+            from core.desktop.access_manager import get_access_manager
+            mgr = get_access_manager()
+            if mgr.is_control_enabled:
+                mgr.revoke("user_toggled_off")
+                self.write_log("SYS: Full Desktop Access disabled.")
+            else:
+                mgr.enable_full_control()
+                self.write_log("SYS: Full Desktop Access enabled [CONTROL_ENABLED].")
+            self._refresh_desktop_access_btn()
+        except Exception as e:
+            self.write_log(f"SYS: Desktop access toggle failed: {e}")
+
+    def _trigger_emergency_stop(self):
+        try:
+            from core.desktop.emergency_stop import get_emergency_stop
+            get_emergency_stop().trigger_halt("ui_button")
+            self.write_log("🚨 EMERGENCY STOP: Desktop control halted and revoked.")
+            self._refresh_desktop_access_btn()
+        except Exception as e:
+            self.write_log(f"SYS: Emergency stop failed: {e}")
+
+    def _open_circle_to_understand(self):
+        try:
+            from core.desktop.selection_overlay import get_selection_overlay
+            def _on_region_selected(pil_img, img_bytes, mime_type, qrect):
+                self.write_log(f"VIS: Region selected ({qrect.width()}x{qrect.height()}px). Analyzing...")
+                if self.on_text_command:
+                    threading.Thread(
+                        target=self.on_text_command,
+                        args=("Explain what is in the selected screen area.",),
+                        daemon=True,
+                    ).start()
+
+            overlay = get_selection_overlay(_on_region_selected)
+            overlay.activate_overlay("freeform")
+        except Exception as e:
+            self.write_log(f"SYS: Circle-to-Understand error: {e}")
+
+    def _open_creation_studio(self):
+        try:
+            from core.studio.studio_window import get_studio_window
+            win = get_studio_window()
+            win.show()
+            win.raise_()
+            win.activateWindow()
+            self.write_log("SYS: Universal Creation Studio opened.")
+        except Exception as e:
+            self.write_log(f"SYS: Could not open Creation Studio: {e}")
 
     # ── Clipboard intelligence ───────────────────────────────────────────────────
 

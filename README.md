@@ -128,6 +128,20 @@ Mark LVI untethers the assistant from proprietary cloud locks:
 - Added [`tools/antigravity_input_gui.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/tools/antigravity_input_gui.py) and desktop shortcut `JARVIS Antigravity Input.lnk` for instant desktop execution.
 - Integrated background REST HTTP server (`http://127.0.0.1:24680`) for cross-language automation.
 
+### 6. Universal Desktop Agent & Visual Context Intelligence
+- **Full Desktop Access Mode:** Permission-controlled desktop interaction with granular scopes (`SCREEN_CAPTURE`, `MOUSE_MOVE`, `MOUSE_CLICK`, `KEYBOARD_INPUT`), session timeouts, and instant fail-safe **Emergency Stop** (`Ctrl+Alt+Escape`, mouse corner flick, or HUD halt).
+- **Circle-to-Understand (C2U):** Transparent multi-monitor overlay window (`Ctrl+Alt+S`) for freeform lasso or rectangular region selection, freezing the screen and explaining any content via the vision pipeline.
+- **Advanced Desktop Perception:** Multi-monitor MSS virtual capture, per-monitor DPI awareness v2, native Windows UI Automation (`pywinauto` UIA backend), and normalized visual grounding.
+- **Intelligent Bézier Cursor Control:** Human-like cubic Bézier mouse movement with randomized perpendicular deviation, ease-in-out velocity curves, hover-settle clicks, and pre/post action state diff verification (`core.outcome`).
+
+### 7. Universal Creation Studio (CAD, Circuits & Workflows)
+- **Multi-Domain Studio Canvas:** Native PyQt6 interactive workspace (`StudioWindow`) featuring infinite smooth pan, zoom, grid snapping, and element inspection.
+- **2D Mechanical CAD:** Precise engineering modeling (plates, fillets, mounting holes, cutouts, dimension annotations).
+- **Circuit Schematics:** Electronics schematic generator with component pins, netlists, and power regulation circuits.
+- **Workflow Architecture:** Process flowcharts, decision nodes, and autonomous agent loop diagrams.
+- **Multi-Format Exporters:** Export to standard **AutoCAD R12/2000 ASCII DXF**, scalable **SVG**, high-res **PNG**, and native **JSON**.
+- **CAD Demonstrator Included:** Built-in precision mechanical mounting plate ($120\text{ mm} \times 80\text{ mm}$, corner fillets, 4 M4 holes, center cutout, dimensions).
+
 ---
 
 ## ⚙️ Architecture & Engine Providers

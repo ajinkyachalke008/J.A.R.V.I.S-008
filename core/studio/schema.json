@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JarvisStudioProject",
+  "type": "object",
+  "required": ["id", "title", "domain", "canvas", "elements"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "domain": {
+      "type": "string",
+      "enum": ["cad", "circuit", "workflow", "diagram"]
+    },
+    "canvas": {
+      "type": "object",
+      "required": ["units", "width", "height"],
+      "properties": {
+        "units": { "type": "string", "enum": ["mm", "px", "inch"] },
+        "width": { "type": "number", "minimum": 1 },
+        "height": { "type": "number", "minimum": 1 },
+        "grid_spacing": { "type": "number", "minimum": 0.1 },
+        "snap_to_grid": { "type": "boolean" },
+        "background_color": { "type": "string" }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "visible": { "type": "boolean" },
+          "locked": { "type": "boolean" },
+          "color": { "type": "string" }
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "geometry"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["line", "rect", "circle", "arc", "fillet", "polyline", "text", "dimension", "component", "wire", "node"]
+          },
+          "layer_id": { "type": "string" },
+          "geometry": { "type": "object" },
+          "style": { "type": "object" },
+          "properties": { "type": "object" },
+          "pins": { "type": "array" }
+        }
+      }
+    },
+    "metadata": { "type": "object" }
+  }
+}
