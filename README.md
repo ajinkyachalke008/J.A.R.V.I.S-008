@@ -245,7 +245,9 @@ Mark-LVI/
 │   └── desktop_downloader.py # Automated file retrieval utilities
 ├── tools/                    # Desktop companion tools and launchers
 │   ├── antigravity_input_gui.py # Standalone Antigravity direct input HUD
-│   └── desktop_dispatcher.py # Standalone file dispatcher window
+│   ├── desktop_dispatcher.py # Standalone file dispatcher window
+│   ├── desktop_downloader_gui.py # Standalone video and file downloader HUD
+│   └── github_manager_gui.py # Standalone GitHub repository & cloner tool
 ├── antigravity_ide_api.py    # Core Antigravity IDE programmatic automation API
 ├── dashboard/                # Web & mobile remote companion interface
 ├── launch.bat                # Windows fast console launcher
