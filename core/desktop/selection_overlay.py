@@ -52,6 +52,15 @@ class SelectionOverlayWindow(QWidget):
 
         self._init_window()
 
+    def set_callback(self, cb: Optional[Callable]) -> None:
+        """Replace active callback safely without duplicate signal accumulation."""
+        try:
+            self.region_selected.disconnect()
+        except (TypeError, RuntimeError):
+            pass
+        if cb:
+            self.region_selected.connect(cb)
+
     def _init_window(self) -> None:
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
@@ -208,5 +217,5 @@ def get_selection_overlay(on_selected: Optional[Callable] = None) -> SelectionOv
         _app = QApplication.instance() or QApplication(sys.argv)
         _overlay_window_instance = SelectionOverlayWindow(on_selected)
     elif on_selected:
-        _overlay_window_instance.region_selected.connect(on_selected)
+        _overlay_window_instance.set_callback(on_selected)
     return _overlay_window_instance

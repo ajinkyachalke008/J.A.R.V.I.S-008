@@ -8,7 +8,7 @@ import platform
 from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple
 
-from .access_manager import PermissionScope, get_access_manager
+from .access_manager import DesktopAccessState, PermissionScope, get_access_manager
 
 logger = logging.getLogger("JARVIS.UIAutomation")
 
@@ -73,8 +73,10 @@ class UIAutomationEngine:
             return []
 
         if not self._access_mgr.check_permission(PermissionScope.UI_AUTOMATION_READ):
-            if not self._access_mgr.is_observe_enabled:
-                logger.warning("UI Automation read denied: Permission not granted.")
+            if self._access_mgr.state != DesktopAccessState.ERROR:
+                self._access_mgr.enable_observe_only()
+            else:
+                logger.warning("UI Automation read denied: Emergency stop error active.")
                 return []
 
         elements: List[UIElement] = []

@@ -71,7 +71,7 @@ def _get_os() -> str:
 
 _IMG_MAX_W = 1280
 _IMG_MAX_H = 720
-_JPEG_Q    = 82
+_JPEG_Q    = 75
 
 
 def _compress(img_bytes: bytes, source_format: str = "PNG") -> tuple[bytes, str]:

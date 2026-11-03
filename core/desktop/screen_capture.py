@@ -11,14 +11,14 @@ import mss
 import mss.tools
 from PIL import Image
 
-from .access_manager import PermissionScope, get_access_manager
+from .access_manager import DesktopAccessState, PermissionScope, get_access_manager
 from .monitor_manager import get_monitor_manager
 
 logger = logging.getLogger("JARVIS.ScreenCapture")
 
-_IMG_MAX_W = 1920
-_IMG_MAX_H = 1080
-_JPEG_QUALITY = 85
+_IMG_MAX_W = 1280
+_IMG_MAX_H = 720
+_JPEG_QUALITY = 75
 
 
 def _ensure_desktop_attached() -> None:
@@ -133,10 +133,12 @@ class ScreenCaptureService:
     def _verify_permission(self) -> None:
         _ensure_desktop_attached()
         if not self._access_mgr.check_permission(PermissionScope.SCREEN_CAPTURE):
-            # If access manager is disabled, auto-enable observation for explicitly requested vision actions
-            # or raise permission error if strict
-            if not self._access_mgr.is_observe_enabled:
-                raise PermissionError("Screen capture denied: Desktop access permission not granted.")
+            # Screen capture is read-only observation. Automatically enable OBSERVE_ONLY mode
+            # for requested visual perception unless an emergency stop error is active.
+            if self._access_mgr.state != DesktopAccessState.ERROR:
+                self._access_mgr.enable_observe_only()
+            else:
+                raise PermissionError("Screen capture denied: Desktop is in ERROR / Emergency Stop state.")
 
     def _process_image(
         self,

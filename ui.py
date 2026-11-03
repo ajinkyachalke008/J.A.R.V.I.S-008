@@ -4263,6 +4263,7 @@ class MainWindow(QMainWindow):
     _quiz_hide_sig  = pyqtSignal()
     _review_sig     = pyqtSignal(str, str, object, object)  # document review payload
     _desktop_state_sig = pyqtSignal(str)                   # desktop access state changed
+    _c2u_sig           = pyqtSignal()                      # trigger Circle-to-Explain across threads
 
     def __init__(self, face_path: str):
         super().__init__()
@@ -4292,6 +4293,7 @@ class MainWindow(QMainWindow):
         )
 
         self.on_text_command   = None
+        self.on_image_command  = None
         self.on_remote_clicked = None   # callable: () -> (url, key) | None
         self.on_interrupt      = None   # callable: () -> None — stop JARVIS mid-speech
         self.on_voice_change   = None   # callable: () -> None — rebuild session with new voice
@@ -4572,6 +4574,31 @@ class MainWindow(QMainWindow):
         sc_intr.activated.connect(self._do_interrupt)
         sc_c2u  = QShortcut(QKeySequence("Ctrl+Alt+S"), self)
         sc_c2u.activated.connect(self._open_circle_to_understand)
+        self._c2u_sig.connect(self._open_circle_to_understand)
+
+        # Global background hotkey watcher for Ctrl+Alt+S on Windows
+        if platform.system() == "Windows":
+            def _watch_c2u_hotkey():
+                try:
+                    import ctypes
+                    user32 = ctypes.windll.user32
+                    VK_CONTROL = 0x11
+                    VK_MENU = 0x12
+                    VK_S = 0x53
+                    was_pressed = False
+                    while True:
+                        time.sleep(0.04)
+                        ctrl = bool(user32.GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                        alt = bool(user32.GetAsyncKeyState(VK_MENU) & 0x8000)
+                        s_key = bool(user32.GetAsyncKeyState(VK_S) & 0x8000)
+                        is_pressed = ctrl and alt and s_key
+                        if is_pressed and not was_pressed:
+                            self._c2u_sig.emit()
+                        was_pressed = is_pressed
+                except Exception:
+                    pass
+
+            threading.Thread(target=_watch_c2u_hotkey, daemon=True, name="c2u-global-hotkey").start()
 
         self._desktop_state_sig.connect(lambda _: self._refresh_desktop_access_btn())
         try:
@@ -6903,8 +6930,19 @@ class MainWindow(QMainWindow):
         try:
             from core.desktop.selection_overlay import get_selection_overlay
             def _on_region_selected(pil_img, img_bytes, mime_type, qrect):
-                self.write_log(f"VIS: Region selected ({qrect.width()}x{qrect.height()}px). Analyzing...")
-                if self.on_text_command:
+                self.write_log(f"VIS: Region selected ({qrect.width()}x{qrect.height()}px). Analyzing with JARVIS...")
+                prompt = (
+                    "Explain what is in this selected area of the screen in detail. "
+                    "If you see code, errors, text, UI elements, charts, or images, "
+                    "describe them clearly and explain what they mean or how to resolve them."
+                )
+                if getattr(self, "on_image_command", None):
+                    threading.Thread(
+                        target=self.on_image_command,
+                        args=(img_bytes, mime_type, prompt),
+                        daemon=True,
+                    ).start()
+                elif getattr(self, "on_text_command", None):
                     threading.Thread(
                         target=self.on_text_command,
                         args=("Explain what is in the selected screen area.",),
@@ -7209,6 +7247,14 @@ class JarvisUI:
     @on_text_command.setter
     def on_text_command(self, cb):
         self._win.on_text_command = cb
+
+    @property
+    def on_image_command(self):
+        return self._win.on_image_command
+
+    @on_image_command.setter
+    def on_image_command(self, cb):
+        self._win.on_image_command = cb
 
     @property
     def on_remote_clicked(self):

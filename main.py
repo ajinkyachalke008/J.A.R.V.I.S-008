@@ -649,6 +649,7 @@ class JarvisLive:
         self.ui.on_push_to_talk   = self.set_push_to_talk
         self.ui.ptt_hold          = self._on_ptt
         self.ui.on_text_command   = self._on_text_command
+        self.ui.on_image_command  = self._on_image_command
         self.ui.on_remote_clicked = self._make_remote_key
         self.ui.on_interrupt      = self.interrupt
         self.ui.on_voice_change   = self._on_voice_change     # voice picker → rebuild session
@@ -964,6 +965,35 @@ class JarvisLive:
         asyncio.run_coroutine_threadsafe(
             self.session.send_client_content(
                 turns={"role": "user", "parts": [{"text": text}]},
+                turn_complete=True
+            ),
+            self._loop
+        )
+
+    def _on_image_command(self, img_bytes: bytes, mime_type: str, prompt: str = ""):
+        if not self._loop or not self.session:
+            self.ui.write_log("SYS: Assistant session is not connected yet.")
+            return
+
+        # Explicit visual selection: wake the assistant automatically if asleep
+        if self._wake_enabled and not self._awake:
+            self.wake(reason="visual screen selection")
+
+        import base64 as _b64
+        b64 = _b64.b64encode(img_bytes).decode("ascii")
+        prompt_text = prompt or "Explain what is in this selected area of the screen in detail."
+        src_label = "[IMAGE SOURCE: SCREEN SELECTION (CIRCLE-TO-EXPLAIN)]"
+
+        print(f"[Vision] 🔍 Circle-to-Explain: {len(img_bytes):,} bytes ({mime_type}) → main session")
+        self.ui.write_log(f"VIS: Circled region ({len(img_bytes):,} bytes) sent to JARVIS.")
+        self.ui.set_state("THINKING")
+
+        asyncio.run_coroutine_threadsafe(
+            self.session.send_client_content(
+                turns={"role": "user", "parts": [
+                    {"inline_data": {"mime_type": mime_type, "data": b64}},
+                    {"text": f"{src_label}\n\n{prompt_text}"},
+                ]},
                 turn_complete=True
             ),
             self._loop
