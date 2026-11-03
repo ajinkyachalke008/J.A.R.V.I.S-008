@@ -904,10 +904,24 @@ class HudCanvas(QWidget):
         p.setPen(QPen(blend(acc if live else main, 0.25 + 0.5 * amp), 1.6))
         p.drawLines(spikes)
 
-        # 8. The inner ring the name sits in.
-        inner = r * 0.355
-        p.setPen(QPen(blend(acc, 0.30 + 0.45 * amp), 1.5))
+        # 8. The inner ring the name sits in with rotating containment ticks.
+        pulse = 0.03 * math.sin(t * 3.6) * (1.0 + amp * 2.0)
+        inner = r * (0.355 + pulse)
+        p.setPen(QPen(blend(acc, 0.35 + 0.50 * amp), 1.6))
         p.drawEllipse(QRectF(cx - inner, cy - inner, inner * 2, inner * 2))
+
+        # Rotating containment ticks
+        tick_n = 24
+        tick_r = inner * 1.08
+        tick_rot = t * rate * 18.0
+        c_ticks = []
+        for ti in range(tick_n):
+            ta = math.radians(ti * (360.0 / tick_n) + tick_rot)
+            tca, tsa = math.cos(ta), math.sin(ta)
+            c_ticks.append(QLineF(cx + tca * inner, cy + tsa * inner,
+                                  cx + tca * tick_r, cy + tsa * tick_r))
+        p.setPen(QPen(blend(main, 0.28 + 0.35 * amp), 1.2))
+        p.drawLines(c_ticks)
 
         # 9. The name, sized from the string rather than from the radius alone:
         #    "J.A.R.V.I.S" and a name someone renamed to "MAX" are very

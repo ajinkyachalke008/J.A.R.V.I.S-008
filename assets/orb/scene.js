@@ -87,6 +87,8 @@ export function createOrbScene(container) {
   let C_DIM    = 0x884400;
   let C_FAINT  = 0x553300;
   let C_HOT    = 0xffcc66;
+  let C_WHITE  = 0xfff8e7;
+  let C_PLASMA = 0xff5500;
 
   // Root group
   const orbGroup = new THREE.Group();
@@ -264,32 +266,180 @@ export function createOrbScene(container) {
   orbGroup.add(innerCore);
 
   // ═══════════════════════════════════════════════
-  // LAYER 5: INNERMOST GLOW CORE (R = 0.25)
+  // LAYER 5: HIGH-DENSITY DYNAMIC HOLOGRAPHIC CORE
   // ═══════════════════════════════════════════════
-  const coreR = 0.26;
-  const icoGeo = new THREE.IcosahedronGeometry(coreR, 1);
-  const icoEdges = new THREE.EdgesGeometry(icoGeo);
-  const icoWireMat = lineMat(C_HOT, 0.92);
-  const icoWire = new THREE.LineSegments(icoEdges, icoWireMat);
-  orbGroup.add(icoWire);
+  const coreGroup = new THREE.Group();
+  orbGroup.add(coreGroup);
 
-  const coreSphereMat = new THREE.MeshBasicMaterial({
-    color: C_HOT,
+  // 1. Dual Geodesic Plasma Crystals (Icosahedron + Dodecahedron)
+  const icoEdges = new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.28, 1));
+  const icoWireMat = lineMat(C_HOT, 0.95);
+  const icoWire = new THREE.LineSegments(icoEdges, icoWireMat);
+  coreGroup.add(icoWire);
+
+  const dodecaEdges = new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(0.19, 0));
+  const dodecaWireMat = lineMat(C_WHITE, 0.88);
+  const dodecaWire = new THREE.LineSegments(dodecaEdges, dodecaWireMat);
+  coreGroup.add(dodecaWire);
+
+  // Geodesic vertex spark points
+  const crystalNodesMat = new THREE.PointsMaterial({
+    color: C_WHITE,
+    size: 0.038,
     transparent: true,
-    opacity: 0.16,
+    opacity: 0.92,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const crystalNodes = new THREE.Points(icoEdges.clone(), crystalNodesMat);
+  coreGroup.add(crystalNodes);
+
+  // 2. Multi-tier Volumetric Plasma Heart
+  const heartSphereMat = new THREE.MeshBasicMaterial({
+    color: C_WHITE,
+    transparent: true,
+    opacity: 0.38,
     blending: THREE.AdditiveBlending,
   });
-  const coreSphere = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), coreSphereMat);
-  orbGroup.add(coreSphere);
+  const heartSphere = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 20), heartSphereMat);
+  coreGroup.add(heartSphere);
 
-  const glowSphereMat = new THREE.MeshBasicMaterial({
-    color: C_MID,
+  const plasmaSphereMat = new THREE.MeshBasicMaterial({
+    color: C_HOT,
+    transparent: true,
+    opacity: 0.24,
+    blending: THREE.AdditiveBlending,
+  });
+  const plasmaSphere = new THREE.Mesh(new THREE.SphereGeometry(0.26, 20, 20), plasmaSphereMat);
+  coreGroup.add(plasmaSphere);
+
+  const auraSphereMat = new THREE.MeshBasicMaterial({
+    color: C_PLASMA,
+    transparent: true,
+    opacity: 0.12,
+    blending: THREE.AdditiveBlending,
+  });
+  const auraSphere = new THREE.Mesh(new THREE.SphereGeometry(0.56, 20, 20), auraSphereMat);
+  coreGroup.add(auraSphere);
+
+  const coronaSphereMat = new THREE.MeshBasicMaterial({
+    color: C_DIM,
     transparent: true,
     opacity: 0.05,
     blending: THREE.AdditiveBlending,
   });
-  const glowSphere = new THREE.Mesh(new THREE.SphereGeometry(0.52, 16, 16), glowSphereMat);
-  orbGroup.add(glowSphere);
+  const coronaSphere = new THREE.Mesh(new THREE.SphereGeometry(0.96, 20, 20), coronaSphereMat);
+  coreGroup.add(coronaSphere);
+
+  // 3. Tri-Axial Gyroscopic Reactor Gimbal Rings
+  function makeGimbalRing(radius, thickness, numTicks = 24) {
+    const grp = new THREE.Group();
+    const ringGeo = new THREE.RingGeometry(radius - thickness, radius + thickness, 80);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: C_BRIGHT,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    grp.add(new THREE.Mesh(ringGeo, ringMat));
+
+    const ticksPts = [];
+    for (let i = 0; i < numTicks; i++) {
+      const a = (i / numTicks) * Math.PI * 2;
+      const innerR = radius - thickness * 1.6;
+      const outerR = radius + thickness * 2.6;
+      ticksPts.push(
+        new THREE.Vector3(innerR * Math.cos(a), innerR * Math.sin(a), 0),
+        new THREE.Vector3(outerR * Math.cos(a), outerR * Math.sin(a), 0)
+      );
+    }
+    const ticksGeo = new THREE.BufferGeometry().setFromPoints(ticksPts);
+    grp.add(new THREE.LineSegments(ticksGeo, lineMat(C_HOT, 0.72)));
+    return grp;
+  }
+
+  const gimbal1 = makeGimbalRing(0.42, 0.007, 24);
+  const gimbal2 = makeGimbalRing(0.58, 0.006, 32);
+  const gimbal3 = makeGimbalRing(0.74, 0.005, 48);
+  coreGroup.add(gimbal1, gimbal2, gimbal3);
+
+  // 4. Dynamic Radiant Energy Arc Discharges (Tendrils)
+  const arcCount = 18;
+  const arcPositions = new Float32Array(arcCount * 2 * 3);
+  const coreArcsGeo = new THREE.BufferGeometry();
+  coreArcsGeo.setAttribute("position", new THREE.BufferAttribute(arcPositions, 3));
+  const coreArcsMat = lineMat(C_HOT, 0.85);
+  const coreArcs = new THREE.LineSegments(coreArcsGeo, coreArcsMat);
+  coreGroup.add(coreArcs);
+
+  // 5. Harmonic Pulse Shockwave Rings (Expanding outward)
+  const shockwaveCount = 4;
+  const shockwaves = [];
+  for (let i = 0; i < shockwaveCount; i++) {
+    const swGeo = new THREE.RingGeometry(0.96, 1.04, 80);
+    const swMat = new THREE.MeshBasicMaterial({
+      color: C_HOT,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const sw = new THREE.Mesh(swGeo, swMat);
+    sw.rotation.x = Math.PI / 2;
+    coreGroup.add(sw);
+    shockwaves.push(sw);
+  }
+
+  // 6. Core Ember Sparks (140 micro-particles orbiting close to core)
+  const emberCount = 140;
+  const emberPos = new Float32Array(emberCount * 3);
+  const emberData = [];
+  for (let i = 0; i < emberCount; i++) {
+    const radius = 0.22 + Math.random() * 0.72;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (0.35 + Math.random() * 1.1) * (Math.random() > 0.5 ? 1 : -1);
+    const phase = Math.random() * Math.PI * 2;
+    const ySpread = 0.25 + Math.random() * 0.35;
+    emberData.push({ radius, angle, speed, phase, ySpread });
+    emberPos[i * 3]     = radius * Math.cos(angle);
+    emberPos[i * 3 + 1] = Math.sin(phase) * ySpread;
+    emberPos[i * 3 + 2] = radius * Math.sin(angle);
+  }
+  const emberGeo = new THREE.BufferGeometry();
+  emberGeo.setAttribute("position", new THREE.BufferAttribute(emberPos, 3));
+  const emberMat = new THREE.PointsMaterial({
+    color: C_WHITE,
+    size: 0.040,
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const emberPoints = new THREE.Points(emberGeo, emberMat);
+  coreGroup.add(emberPoints);
+
+  // 7. Dual-Axis Circular 3D Voice Equalizer Waveform Rings (Talk Visualizer)
+  const eqBarCount = 48;
+  const eqBarPositions = new Float32Array(eqBarCount * 2 * 3);
+  const eqBarGeo = new THREE.BufferGeometry();
+  eqBarGeo.setAttribute("position", new THREE.BufferAttribute(eqBarPositions, 3));
+  const eqBarMat = lineMat(C_HOT, 0.90);
+  const eqBars = new THREE.LineSegments(eqBarGeo, eqBarMat);
+  eqBars.rotation.x = Math.PI / 2;
+  coreGroup.add(eqBars);
+
+  // Vertical Equalizer Ring (Cross-axial soundwave cage)
+  const eqBarCountV = 36;
+  const eqBarPositionsV = new Float32Array(eqBarCountV * 2 * 3);
+  const eqBarGeoV = new THREE.BufferGeometry();
+  eqBarGeoV.setAttribute("position", new THREE.BufferAttribute(eqBarPositionsV, 3));
+  const eqBarMatV = lineMat(C_BRIGHT, 0.85);
+  const eqBarsV = new THREE.LineSegments(eqBarGeoV, eqBarMatV);
+  eqBarsV.rotation.y = Math.PI / 2;
+  coreGroup.add(eqBarsV);
 
   // ═══════════════════════════════════════════════
   // LAYER 6: FLOATING TECHNICAL TEXT SPRITES
@@ -478,44 +628,186 @@ export function createOrbScene(container) {
     currentAudioAmp += (targetAudioAmp - currentAudioAmp) * 0.28;
     const amp = currentAudioAmp;
 
-    // Outer shell rotation
-    outerShell.rotation.y += 0.0016 * stateSpeedMult;
-    outerShell.rotation.x = Math.sin(t * 0.08) * 0.05;
-    panelGroup.rotation.y += 0.0019 * stateSpeedMult;
+    // ── Dynamic Vocal Cadence & Speech Envelope ──
+    const isSpeaking = currentState === "SPEAKING";
+    const isListening = currentState === "LISTENING";
+    const hasAudio = amp > 0.012;
 
-    // Counter-rotations
-    shell2.rotation.y -= 0.0012 * stateSpeedMult;
-    innerCore.rotation.y -= 0.0055 * stateSpeedMult;
-    innerCore.rotation.z += 0.0025 * stateSpeedMult;
+    // Synthetic multi-harmonic vocal envelope (natural human speech cadence)
+    const tSpeech = t * 16.0;
+    const synthCadence = (
+      Math.sin(tSpeech) * 0.32 +
+      Math.sin(tSpeech * 1.63) * 0.25 +
+      Math.cos(tSpeech * 2.85) * 0.22 +
+      Math.sin(tSpeech * 4.15) * 0.18 +
+      0.45
+    );
+    const speechMod = Math.max(0.0, Math.min(1.0, synthCadence));
 
-    // Innermost icosahedron
-    icoWire.rotation.x += 0.010;
-    icoWire.rotation.y += 0.014;
+    // When speaking, blend real audio amplitude with synthetic cadence so there is NEVER a frozen or flat moment:
+    let talkEnergy = 0.0;
+    if (isSpeaking) {
+      talkEnergy = Math.max(amp * 3.2, speechMod * 0.88);
+    } else if (hasAudio) {
+      talkEnergy = Math.min(1.0, amp * 4.2);
+    } else if (isListening) {
+      talkEnergy = Math.sin(t * 4.0) * 0.08 + 0.08;
+    }
 
-    // Core pulsing with speech amplitude & ambient breathing
-    const surge = Math.pow(Math.max(0, Math.sin(t * 0.45)), 6) * 1.6;
-    const audioBoost = amp * 2.2;
-    const coreScale = 1.0 + surge + audioBoost + Math.sin(t * 4.5) * 0.04;
-    coreSphere.scale.setScalar(coreScale);
-    glowSphere.scale.setScalar(1.0 + surge * 0.8 + audioBoost * 1.5);
-    icoWire.scale.setScalar(1.0 + surge * 0.5 + audioBoost * 0.8);
+    // ── Continuous Anti-Gravity Floating & Multi-Axis Orbital Movement ──
+    // Noticeably faster, continuous multi-axis rotation
+    orbGroup.rotation.y += (0.0085 + talkEnergy * 0.016) * stateSpeedMult;
+    orbGroup.position.y = Math.sin(t * 1.8) * 0.13;
+    orbGroup.position.x = Math.sin(t * 0.9) * 0.05;
+    orbGroup.rotation.x = Math.sin(t * 1.1) * 0.075;
+    orbGroup.rotation.z = Math.cos(t * 1.3) * 0.060;
 
-    const baseCoreOp = 0.14 + amp * 0.55 + surge * 0.2;
-    coreSphereMat.opacity = Math.min(0.85, baseCoreOp);
-    glowSphereMat.opacity = Math.min(0.35, 0.04 + amp * 0.22 + surge * 0.08);
-    icoWireMat.opacity = Math.min(1.0, 0.6 + amp * 0.4 + surge * 0.35);
+    // Outer shell & panel counter-rotations
+    outerShell.rotation.y += (0.0065 + talkEnergy * 0.012) * stateSpeedMult;
+    outerShell.rotation.x = Math.sin(t * 0.7) * 0.035;
+    panelGroup.rotation.y += (0.0095 + talkEnergy * 0.018) * stateSpeedMult;
+    panelGroup.rotation.x = Math.cos(t * 0.6) * 0.035;
+    shell2.rotation.y -= (0.0085 + talkEnergy * 0.015) * stateSpeedMult;
+    shell2.rotation.z = Math.cos(t * 0.8) * 0.045;
+    innerCore.rotation.y -= (0.0175 + talkEnergy * 0.032) * stateSpeedMult;
+    innerCore.rotation.z += (0.0095 + talkEnergy * 0.018) * stateSpeedMult;
 
-    // Orbiting debris
+    // Rhythmic heartbeat & core surge
+    const heartbeat = Math.pow(Math.sin(t * 3.2), 4) * 0.20 + Math.sin(t * 1.6) * 0.10;
+    const surge = Math.pow(Math.max(0, Math.sin(t * 0.45)), 6) * 1.8;
+    const corePower = 1.0 + heartbeat + surge + talkEnergy * 1.8;
+
+    // Geodesic Crystals rotation (accelerates sharply during talk)
+    icoWire.rotation.x += (0.022 + talkEnergy * 0.065) * stateSpeedMult;
+    icoWire.rotation.y += (0.028 + talkEnergy * 0.075) * stateSpeedMult;
+    dodecaWire.rotation.y -= (0.032 + talkEnergy * 0.080) * stateSpeedMult;
+    dodecaWire.rotation.z += (0.022 + talkEnergy * 0.055) * stateSpeedMult;
+    crystalNodes.rotation.copy(icoWire.rotation);
+
+    // Gimbal containment rings counter-rotations (accelerates during talk)
+    gimbal1.rotation.x += (0.020 + talkEnergy * 0.060) * stateSpeedMult;
+    gimbal1.rotation.y += (0.012 + talkEnergy * 0.035) * stateSpeedMult;
+    gimbal2.rotation.y -= (0.025 + talkEnergy * 0.065) * stateSpeedMult;
+    gimbal2.rotation.z += (0.018 + talkEnergy * 0.045) * stateSpeedMult;
+    gimbal3.rotation.z += (0.030 + talkEnergy * 0.075) * stateSpeedMult;
+    gimbal3.rotation.x -= (0.012 + talkEnergy * 0.030) * stateSpeedMult;
+
+    // Dynamic core scaling with harmonic micro-vibrations
+    const jitter = Math.sin(t * 22.0) * 0.045 * (1.0 + talkEnergy * 3.5);
+    heartSphere.scale.setScalar(corePower * 1.15 + jitter);
+    plasmaSphere.scale.setScalar(1.0 + heartbeat * 0.7 + talkEnergy * 2.2);
+    auraSphere.scale.setScalar(1.0 + heartbeat * 0.5 + talkEnergy * 2.8);
+    coronaSphere.scale.setScalar(1.0 + surge * 0.4 + talkEnergy * 3.6);
+    icoWire.scale.setScalar(1.0 + surge * 0.4 + talkEnergy * 0.95 + jitter);
+    dodecaWire.scale.setScalar(1.0 + surge * 0.3 + talkEnergy * 0.75 - jitter * 0.5);
+
+    // Opacity modulation
+    heartSphereMat.opacity = Math.min(0.98, 0.38 + talkEnergy * 0.58 + surge * 0.25);
+    plasmaSphereMat.opacity = Math.min(0.88, 0.24 + talkEnergy * 0.50 + surge * 0.2);
+    auraSphereMat.opacity = Math.min(0.58, 0.12 + talkEnergy * 0.38 + surge * 0.15);
+    coronaSphereMat.opacity = Math.min(0.35, 0.05 + talkEnergy * 0.25 + surge * 0.08);
+
+    // Radiant Energy Arcs / Tendrils dynamic jitter
+    const arcPos = coreArcsGeo.attributes.position.array;
+    for (let i = 0; i < arcCount; i++) {
+      const theta = (i / arcCount) * Math.PI * 2 + t * (0.8 + talkEnergy * 2.2) * stateSpeedMult;
+      const phi = Math.sin(t * 1.8 + i * 0.9) * 0.7 + Math.PI / 2;
+      const arcLen = (0.38 + 0.32 * Math.sin(t * 9.5 + i * 2.3) + talkEnergy * 0.85) * corePower;
+      const arcJitter = 0.05 * Math.sin(t * 36.0 + i * 5.7) * (1.0 + talkEnergy * 2.5);
+
+      arcPos[i * 6]     = 0.09 * Math.sin(phi) * Math.cos(theta);
+      arcPos[i * 6 + 1] = 0.09 * Math.cos(phi);
+      arcPos[i * 6 + 2] = 0.09 * Math.sin(phi) * Math.sin(theta);
+
+      arcPos[i * 6 + 3] = (arcLen + arcJitter) * Math.sin(phi) * Math.cos(theta);
+      arcPos[i * 6 + 4] = (arcLen + arcJitter) * Math.cos(phi);
+      arcPos[i * 6 + 5] = (arcLen + arcJitter) * Math.sin(phi) * Math.sin(theta);
+    }
+    coreArcsGeo.attributes.position.needsUpdate = true;
+    coreArcsMat.opacity = Math.min(1.0, 0.70 + talkEnergy * 0.30 + surge * 0.2);
+
+    // ── Dual-Axis Circular 3D Voice Equalizer Waveform Rings ──
+    // 1. Horizontal Equatorial Waveform Ring
+    const eqPos = eqBarGeo.attributes.position.array;
+    const eqBaseR = 0.80;
+    for (let i = 0; i < eqBarCount; i++) {
+      const a = (i / eqBarCount) * Math.PI * 2 + t * 0.55 * stateSpeedMult;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const freqMod = Math.abs(
+        Math.sin(i * 0.55 + t * 14.0) * 0.65 +
+        Math.cos(i * 1.25 + t * 24.0) * 0.35
+      );
+      const idleBar = 0.025 + 0.015 * Math.sin(t * 4.0 + i * 0.4);
+      const barH = idleBar + talkEnergy * (0.12 + 0.45 * freqMod);
+
+      eqPos[i * 6]     = ca * eqBaseR;
+      eqPos[i * 6 + 1] = sa * eqBaseR;
+      eqPos[i * 6 + 2] = 0;
+      eqPos[i * 6 + 3] = ca * (eqBaseR + barH);
+      eqPos[i * 6 + 4] = sa * (eqBaseR + barH);
+      eqPos[i * 6 + 5] = 0;
+    }
+    eqBarGeo.attributes.position.needsUpdate = true;
+    eqBarMat.opacity = Math.min(1.0, 0.35 + talkEnergy * 0.65);
+
+    // 2. Vertical Cross-Axial Waveform Ring
+    const eqPosV = eqBarGeoV.attributes.position.array;
+    const eqBaseRV = 0.76;
+    for (let i = 0; i < eqBarCountV; i++) {
+      const a = (i / eqBarCountV) * Math.PI * 2 - t * 0.45 * stateSpeedMult;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const freqModV = Math.abs(
+        Math.cos(i * 0.70 + t * 16.0) * 0.60 +
+        Math.sin(i * 1.45 + t * 26.0) * 0.40
+      );
+      const idleBarV = 0.020 + 0.012 * Math.cos(t * 4.5 + i * 0.5);
+      const barHV = idleBarV + talkEnergy * (0.10 + 0.38 * freqModV);
+
+      eqPosV[i * 6]     = ca * eqBaseRV;
+      eqPosV[i * 6 + 1] = sa * eqBaseRV;
+      eqPosV[i * 6 + 2] = 0;
+      eqPosV[i * 6 + 3] = ca * (eqBaseRV + barHV);
+      eqPosV[i * 6 + 4] = sa * (eqBaseRV + barHV);
+      eqPosV[i * 6 + 5] = 0;
+    }
+    eqBarGeoV.attributes.position.needsUpdate = true;
+    eqBarMatV.opacity = Math.min(1.0, 0.30 + talkEnergy * 0.60);
+
+    // Harmonic Pulse Shockwaves (traveling outward, accelerates during talk)
+    for (let i = 0; i < shockwaves.length; i++) {
+      const sw = shockwaves[i];
+      const prog = (t * ((0.48 + talkEnergy * 0.75) * stateSpeedMult) + i / shockwaves.length) % 1.0;
+      const waveR = 0.25 + prog * 2.4;
+      sw.scale.set(waveR, waveR, 1);
+      const op = Math.sin(prog * Math.PI) * (0.32 + talkEnergy * 0.68 + surge * 0.2);
+      sw.material.opacity = Math.max(0, op);
+      sw.rotation.z += (0.008 + talkEnergy * 0.025) * stateSpeedMult;
+    }
+
+    // Core Ember Sparks animation (swirls faster during talk)
+    const curEmberPos = emberGeo.attributes.position.array;
+    for (let i = 0; i < emberCount; i++) {
+      const u = emberData[i];
+      u.angle += u.speed * stateSpeedMult * (0.016 + talkEnergy * 0.045);
+      const curR = u.radius * (1.0 + Math.sin(t * 3.0 + u.phase) * 0.18 + talkEnergy * 0.45);
+      curEmberPos[i * 3]     = curR * Math.cos(u.angle);
+      curEmberPos[i * 3 + 1] = Math.sin(u.angle * 1.8 + u.phase) * (curR * u.ySpread);
+      curEmberPos[i * 3 + 2] = curR * Math.sin(u.angle);
+    }
+    emberGeo.attributes.position.needsUpdate = true;
+
+    // Orbiting debris with tidal vortex breathing
     debris.forEach((d) => {
       const u = d.userData;
       const a = t * u.speed * stateSpeedMult + u.phase;
+      const dynR = u.orbitR * (1.0 + Math.sin(t * 0.8 + u.phase) * 0.12 + talkEnergy * 0.35);
       d.position.set(
-        u.orbitR * Math.cos(a) * Math.cos(u.tiltX),
-        u.orbitR * Math.sin(u.tiltX) * Math.sin(a * 0.8) + Math.sin(a * 0.3 + u.tiltZ) * 0.2,
-        u.orbitR * Math.sin(a) * Math.cos(u.tiltZ)
+        dynR * Math.cos(a) * Math.cos(u.tiltX),
+        dynR * Math.sin(u.tiltX) * Math.sin(a * 0.8) + Math.sin(a * 0.3 + u.tiltZ) * 0.2,
+        dynR * Math.sin(a) * Math.cos(u.tiltZ)
       );
-      d.rotation.x += 0.015;
-      d.rotation.z += 0.01;
+      d.rotation.x += (0.035 + talkEnergy * 0.055) * stateSpeedMult;
+      d.rotation.z += (0.025 + talkEnergy * 0.045) * stateSpeedMult;
     });
 
     // Text drift
@@ -547,9 +839,11 @@ export function createOrbScene(container) {
     // Dust subtle rotation
     dustPoints.rotation.y += 0.0003;
 
-    // Bloom pulse lifted by voice
-    bloom.strength = 1.6 + Math.sin(t * 0.8) * 0.25 + amp * 1.4;
+    // Bloom pulse lifted by speech energy & core surge
+    bloom.strength = 1.85 + Math.sin(t * 1.1) * 0.25 + talkEnergy * 2.2 + surge * 0.8;
+    bloom.radius = 0.44 + talkEnergy * 0.25;
     chromaticPass.uniforms.uTime.value = t;
+    chromaticPass.uniforms.uIntensity.value = 0.0028 + talkEnergy * 0.0035 + surge * 0.0025;
 
     controls.update();
     composer.render();
@@ -574,19 +868,20 @@ export function createOrbScene(container) {
     setState: (state) => {
       currentState = String(state || "IDLE").toUpperCase();
       if (currentState === "THINKING" || currentState === "PROCESSING") {
-        stateSpeedMult = 2.4;
-        bloom.strength = 2.4;
+        stateSpeedMult = 2.8;
+        bloom.strength = 2.6;
       } else if (currentState === "LISTENING") {
         stateSpeedMult = 1.6;
-        bloom.strength = 2.0;
+        bloom.strength = 2.2;
       } else if (currentState === "SPEAKING") {
-        stateSpeedMult = 1.3;
+        stateSpeedMult = 1.85;
+        bloom.strength = 2.5;
       } else if (currentState === "MUTED") {
-        stateSpeedMult = 0.4;
-        bloom.strength = 1.0;
+        stateSpeedMult = 0.35;
+        bloom.strength = 1.1;
       } else {
         stateSpeedMult = 1.0;
-        bloom.strength = 1.6;
+        bloom.strength = 1.85;
       }
     },
     resetView: () => {

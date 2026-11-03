@@ -30,6 +30,7 @@ var QWebChannel = function(transport, initCallback) {
     };
 
     this.transport.onmessage = function(message) {
+        console.log("[TRANSPORT ONMESSAGE]:", typeof message.data === "string" ? message.data : JSON.stringify(message.data));
         var data = message.data;
         if (typeof data === "string") {
             data = JSON.parse(data);
@@ -89,7 +90,7 @@ var QWebChannel = function(transport, initCallback) {
         var cb = channel.execCallbacks[message.id];
         delete channel.execCallbacks[message.id];
         if (cb) {
-            cb(message.response);
+            cb(message.data !== undefined ? message.data : message.response);
         }
     };
 
@@ -110,6 +111,7 @@ var QWebChannel = function(transport, initCallback) {
     };
 
     channel.exec({type: QWebChannelMessageTypes.init}, function(data) {
+        console.log("[QWebChannel INIT DATA]:", JSON.stringify(data));
         for (var objectName in data) {
             var object = new QObject(objectName, data[objectName], channel);
         }

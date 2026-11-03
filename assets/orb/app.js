@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof QWebChannel !== "undefined") {
         function setupChannel(transport) {
             new QWebChannel(transport, (channel) => {
+                console.log("[Orb] QWebChannel initialized. Available objects:", JSON.stringify(Object.keys(channel.objects)));
+                window.__channelObjectsKeys = Object.keys(channel.objects);
                 const bridge = channel.objects.orbBridge;
                 if (!bridge) {
                     console.warn("[Orb] orbBridge object not found on QWebChannel");
@@ -33,6 +35,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("[Orb] Successfully connected to Python OrbBridge!");
                 if (bridge.logFromJs) {
                     bridge.logFromJs("Orb JavaScript client connected and ready.");
+                }
+
+                // Synchronize initial state immediately
+                if (bridge.state) {
+                    scene.setState(bridge.state);
+                    if (modeBadge) {
+                        modeBadge.textContent = "STATE: " + String(bridge.state).toUpperCase();
+                    }
+                }
+                if (typeof bridge.audioLevel === "number") {
+                    scene.setAudioLevel(bridge.audioLevel);
                 }
 
                 // Connect signals

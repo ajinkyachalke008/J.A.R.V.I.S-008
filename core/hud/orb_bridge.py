@@ -41,6 +41,8 @@ class OrbBridge(QObject):
             lv = max(0.0, min(1.0, float(level)))
         except (TypeError, ValueError):
             return
+        if abs(lv - self._current_audio_level) < 0.005 and lv < 0.002:
+            return
         self._current_audio_level = lv
         self.audioLevelChanged.emit(lv)
 
