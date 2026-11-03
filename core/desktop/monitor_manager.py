@@ -11,8 +11,17 @@ from typing import List, Optional, Tuple
 
 logger = logging.getLogger("JARVIS.MonitorManager")
 
-# Initialize Windows DPI Awareness early
+# Initialize Windows Desktop Station and DPI Awareness early
 if platform.system() == "Windows":
+    try:
+        import win32service
+        hwinsta = win32service.OpenWindowStation("winsta0", False, 0x037F)
+        hwinsta.SetProcessWindowStation()
+        hdesk = win32service.OpenDesktop("default", 0, False, 0x01FF)
+        hdesk.SetThreadDesktop()
+    except Exception:
+        pass
+
     try:
         # 2 = PROCESS_PER_MONITOR_DPI_AWARE_V2
         ctypes.windll.shcore.SetProcessDpiAwareness(2)

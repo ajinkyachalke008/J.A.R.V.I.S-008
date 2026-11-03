@@ -96,7 +96,7 @@ class ActionVerifier:
         # Request accepted but no change detected
         return outcome.unverified(
             action_name,
-            reason="No visible screen change or focus change detected",
+            "No visible screen change or focus change detected",
             target=target_desc,
         )
 
