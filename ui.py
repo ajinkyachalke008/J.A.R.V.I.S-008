@@ -4708,6 +4708,7 @@ class MainWindow(QMainWindow):
             self._island_model = IslandPresentationModel()
             self._island = DynamicIsland(parent=None, model=self._island_model)
             self._island.set_main_window(self)
+            self._island.hide_requested.connect(self._refresh_island_btn)
             if get_dynamic_island_config().get("enabled", True):
                 self._island.show()
                 self._island.reposition()
@@ -5782,6 +5783,10 @@ class MainWindow(QMainWindow):
         self._hud_btn.clicked.connect(self._toggle_hud_style)
         self._refresh_hud_btn()
 
+        self._island_btn = _row(QPushButton())
+        self._island_btn.clicked.connect(self._toggle_island_visibility)
+        self._refresh_island_btn()
+
         # Desktop Access, Selection & Studio
         self._desktop_access_btn = _row(QPushButton(), self._BTN_DIM)
         self._desktop_access_btn.clicked.connect(self._toggle_desktop_access)
@@ -5830,6 +5835,7 @@ class MainWindow(QMainWindow):
         if checked:
             self._close_setup()
             self._refresh_wake_btns()   # cheap now: the state was warmed at boot
+            self._refresh_island_btn()
             self._position_ctrl_drawer()
             self._ctrl_drawer.show()
             self._ctrl_drawer.raise_()
@@ -6667,6 +6673,55 @@ class MainWindow(QMainWindow):
                  else "the reactor core"))
         self._log.append_log(f"SYS: HUD switched to {label}.")
 
+    def _refresh_island_btn(self):
+        """Update Dynamic Island button label and style in the Controls drawer."""
+        if not hasattr(self, "_island_btn"):
+            return
+        from memory.config_manager import get_dynamic_island_config
+        is_on = bool(hasattr(self, "_island") and self._island is not None and self._island.isVisible())
+        if not is_on and hasattr(self, "_island") and self._island is not None:
+            is_on = bool(get_dynamic_island_config().get("enabled", True) and not self._island.isHidden())
+
+        _on = f"""
+            QPushButton {{ background: #001a08; color: {C.GREEN};
+                border: 1px solid {C.GREEN_D}; border-radius: 3px;
+                text-align: left; padding: 0 8px; }}
+            QPushButton:hover {{ background: #002010; }}"""
+        _off = f"""
+            QPushButton {{ background: transparent; color: {C.TEXT_DIM};
+                border: 1px solid {C.BORDER}; border-radius: 3px;
+                text-align: left; padding: 0 8px; }}
+            QPushButton:hover {{ color: {C.TEXT}; border: 1px solid {C.BORDER_B}; }}"""
+
+        self._island_btn.setText("🏝  DYNAMIC ISLAND: ON" if is_on else "🏝  DYNAMIC ISLAND: OFF")
+        self._island_btn.setStyleSheet(_on if is_on else _off)
+        self._island_btn.setToolTip("Always-on floating holographic Arc Reactor companion. Tap to toggle.")
+
+    def _toggle_island_visibility(self):
+        """Toggle Dynamic Island floating companion ON and OFF."""
+        if not hasattr(self, "_island") or self._island is None:
+            return
+        from memory.config_manager import save_dynamic_island_config
+        if self._island.isVisible():
+            self._island.hide()
+            try:
+                save_dynamic_island_config({"enabled": False})
+            except Exception:
+                pass
+            self.write_log("SYS: Dynamic Island hidden [OFF].")
+        else:
+            self._island.show()
+            self._island.reposition()
+            try:
+                save_dynamic_island_config({"enabled": True})
+            except Exception:
+                pass
+            self.write_log("SYS: Dynamic Island active [ON].")
+
+        self._refresh_island_btn()
+        if hasattr(self, "_tray_island_action") and self._tray_island_action is not None:
+            self._tray_island_action.setChecked(self._island.isVisible())
+
     def _toggle_ptt(self):
         from memory.config_manager import (get_push_to_talk_enabled,
                                            save_push_to_talk_enabled)
@@ -7229,27 +7284,8 @@ class MainWindow(QMainWindow):
         act_island.setCheckable(True)
         island_vis = bool(hasattr(self, "_island") and self._island is not None and self._island.isVisible())
         act_island.setChecked(island_vis)
-
-        def _toggle_island():
-            if hasattr(self, "_island") and self._island:
-                from memory.config_manager import save_dynamic_island_config
-                if self._island.isVisible():
-                    self._island.hide()
-                    act_island.setChecked(False)
-                    try:
-                        save_dynamic_island_config({"enabled": False})
-                    except Exception:
-                        pass
-                else:
-                    self._island.show()
-                    self._island.reposition()
-                    act_island.setChecked(True)
-                    try:
-                        save_dynamic_island_config({"enabled": True})
-                    except Exception:
-                        pass
-
-        act_island.triggered.connect(_toggle_island)
+        self._tray_island_action = act_island
+        act_island.triggered.connect(self._toggle_island_visibility)
         menu.addAction(act_island)
 
         menu.addSeparator()

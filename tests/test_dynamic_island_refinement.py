@@ -205,3 +205,19 @@ class TestDynamicIslandRefinement:
         finally:
             island.close()
             island.deleteLater()
+
+    def test_controls_drawer_island_toggle(self, qapp):
+        """Verify MainWindow controls drawer exposes _island_btn and toggle handler."""
+        from ui import MainWindow
+        win = MainWindow("face.png")
+        try:
+            assert hasattr(win, "_island_btn"), "MainWindow must have _island_btn in controls drawer"
+            assert hasattr(win, "_toggle_island_visibility"), "MainWindow must have _toggle_island_visibility handler"
+            assert hasattr(win, "_refresh_island_btn"), "MainWindow must have _refresh_island_btn helper"
+
+            # Check initial button text
+            win._refresh_island_btn()
+            assert "DYNAMIC ISLAND" in win._island_btn.text()
+        finally:
+            win.close()
+            win.deleteLater()
