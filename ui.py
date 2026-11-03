@@ -4700,6 +4700,21 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
 
+        # Persistent Dynamic Island Companion (independent unparented floating window)
+        try:
+            from core.hud.island_state import IslandPresentationModel
+            from core.hud.dynamic_island import DynamicIsland
+            from memory.config_manager import get_dynamic_island_config
+            self._island_model = IslandPresentationModel()
+            self._island = DynamicIsland(parent=None, model=self._island_model)
+            self._island.set_main_window(self)
+            if get_dynamic_island_config().get("enabled", True):
+                self._island.show()
+                self._island.reposition()
+        except Exception as _ie:
+            self._island_model = None
+            self._island = None
+
         # Bottom bar System Tray Icon with JARVIS logo
         self._init_system_tray()
 
@@ -7154,6 +7169,11 @@ class MainWindow(QMainWindow):
         if hasattr(self, "_tray_icon") and self._tray_icon:
             desc = "Sleeping (say 'Hey Jarvis')" if state == "SLEEPING" else state.capitalize()
             self._tray_icon.setToolTip(f"JARVIS — {desc}")
+        if hasattr(self, "_island") and self._island:
+            try:
+                self._island.set_state(state)
+            except Exception:
+                pass
 
     def _init_system_tray(self):
         """Initialise visible logo icon in Windows taskbar system tray at bottom of screen."""
@@ -7205,6 +7225,33 @@ class MainWindow(QMainWindow):
         act_mute.triggered.connect(self._toggle_mute)
         menu.addAction(act_mute)
 
+        act_island = QAction("🏝️  Dynamic Island", self)
+        act_island.setCheckable(True)
+        island_vis = bool(hasattr(self, "_island") and self._island is not None and self._island.isVisible())
+        act_island.setChecked(island_vis)
+
+        def _toggle_island():
+            if hasattr(self, "_island") and self._island:
+                from memory.config_manager import save_dynamic_island_config
+                if self._island.isVisible():
+                    self._island.hide()
+                    act_island.setChecked(False)
+                    try:
+                        save_dynamic_island_config({"enabled": False})
+                    except Exception:
+                        pass
+                else:
+                    self._island.show()
+                    self._island.reposition()
+                    act_island.setChecked(True)
+                    try:
+                        save_dynamic_island_config({"enabled": True})
+                    except Exception:
+                        pass
+
+        act_island.triggered.connect(_toggle_island)
+        menu.addAction(act_island)
+
         menu.addSeparator()
 
         act_exit = QAction("❌  Exit JARVIS", self)
@@ -7247,6 +7294,12 @@ class MainWindow(QMainWindow):
             self._toggle_window_visibility()
 
     def _force_quit(self):
+        if hasattr(self, "_island") and self._island:
+            try:
+                self._island.close()
+                self._island = None
+            except Exception:
+                pass
         if hasattr(self, "_tray_icon") and self._tray_icon:
             self._tray_icon.hide()
         QApplication.quit()
@@ -7263,6 +7316,12 @@ class MainWindow(QMainWindow):
             )
             event.ignore()
         else:
+            if hasattr(self, "_island") and self._island:
+                try:
+                    self._island.close()
+                    self._island = None
+                except Exception:
+                    pass
             event.accept()
 
 
@@ -7446,6 +7505,11 @@ class JarvisUI:
         GIL, so no signal/lock is needed for this cosmetic value."""
         try:
             self._win.hud.set_audio_level(level)
+        except Exception:
+            pass
+        try:
+            if hasattr(self._win, "_island") and self._win._island:
+                self._win._island.set_audio_level(level)
         except Exception:
             pass
 

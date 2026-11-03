@@ -38,9 +38,15 @@ def load_api_keys() -> dict:
     if not CONFIG_FILE.exists():
         return {}
     try:
-        return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return {}
+        return data
     except Exception as e:
-        print(f"❌ Failed to load api_keys.json: {e}")
+        try:
+            print(f"[Config] Failed to load api_keys.json: {e}")
+        except Exception:
+            pass
         return {}
 
 def get_gemini_key() -> str | None:
@@ -550,3 +556,70 @@ def save_providers(mode: str = None, pipeline: dict = None, creds: dict = None,
 
     data["providers"] = block
     CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
+
+
+# ── Dynamic Island Configuration ─────────────────────────────────────────────
+
+DEFAULT_DYNAMIC_ISLAND_CONFIG: dict = {
+    "enabled": True,
+    "anchor": "top_center",
+    "offset_x": 0,
+    "offset_y": 10,
+    "monitor_index": 0,
+    "scale": 1.0,
+    "auto_collapse": True,
+    "collapse_delay": 5,
+    "draggable": True,
+    "always_on_top": True,
+    "animation_quality": "balanced",
+    "show_audio_visualizer": True,
+    "reduced_motion": False,
+}
+
+
+def get_dynamic_island_config() -> dict:
+    """Return persistent configuration dictionary for Dynamic Island desktop companion."""
+    raw = load_api_keys().get("dynamic_island")
+    cfg = dict(DEFAULT_DYNAMIC_ISLAND_CONFIG)
+    if isinstance(raw, dict):
+        cfg.update(raw)
+    cfg["enabled"] = bool(cfg.get("enabled", True))
+    cfg["anchor"] = str(cfg.get("anchor", "top_center")).strip().lower()
+    try:
+        cfg["offset_x"] = int(cfg.get("offset_x", 0))
+    except (TypeError, ValueError):
+        cfg["offset_x"] = 0
+    try:
+        cfg["offset_y"] = int(cfg.get("offset_y", 10))
+    except (TypeError, ValueError):
+        cfg["offset_y"] = 10
+    try:
+        cfg["monitor_index"] = max(0, int(cfg.get("monitor_index", 0)))
+    except (TypeError, ValueError):
+        cfg["monitor_index"] = 0
+    try:
+        cfg["scale"] = max(0.5, min(3.0, float(cfg.get("scale", 1.0))))
+    except (TypeError, ValueError):
+        cfg["scale"] = 1.0
+    cfg["auto_collapse"] = bool(cfg.get("auto_collapse", True))
+    try:
+        cfg["collapse_delay"] = max(1, min(60, int(cfg.get("collapse_delay", 5))))
+    except (TypeError, ValueError):
+        cfg["collapse_delay"] = 5
+    cfg["draggable"] = bool(cfg.get("draggable", True))
+    cfg["always_on_top"] = bool(cfg.get("always_on_top", True))
+    qual = str(cfg.get("animation_quality", "balanced")).strip().lower()
+    cfg["animation_quality"] = qual if qual in ("low", "balanced", "high") else "balanced"
+    cfg["show_audio_visualizer"] = bool(cfg.get("show_audio_visualizer", True))
+    cfg["reduced_motion"] = bool(cfg.get("reduced_motion", False))
+    return cfg
+
+
+def save_dynamic_island_config(cfg: dict) -> None:
+    """Safely patch the 'dynamic_island' configuration block in api_keys.json."""
+    if not isinstance(cfg, dict):
+        return
+    current = get_dynamic_island_config()
+    current.update(cfg)
+    _patch_config(dynamic_island=current)
+
