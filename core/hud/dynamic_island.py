@@ -32,6 +32,7 @@ from typing import Any, Optional, Tuple, Union
 from PyQt6.QtCore import (
     QEasingCurve,
     QPoint,
+    QPointF,
     QPropertyAnimation,
     QRect,
     QRectF,
@@ -83,10 +84,15 @@ from memory.config_manager import (
 
 logger = logging.getLogger("JARVIS.DynamicIsland")
 
-COLLAPSED_W = 216
-COLLAPSED_H = 46
-EXPANDED_W = 340
-EXPANDED_H = 175
+BASE_COLLAPSED_W = 180
+BASE_COLLAPSED_H = 42
+BASE_EXPANDED_W = 330
+BASE_EXPANDED_H = 175
+
+COLLAPSED_W = BASE_COLLAPSED_W
+COLLAPSED_H = BASE_COLLAPSED_H
+EXPANDED_W = BASE_EXPANDED_W
+EXPANDED_H = BASE_EXPANDED_H
 
 
 class MirroredWaveformWidget(QWidget):
@@ -255,6 +261,8 @@ class DynamicIsland(QWidget):
         self._main_window: Optional[QWidget] = None
         self._drag_start: Optional[QPoint] = None
         self._is_hovered: bool = False
+        self._glow_phase: float = 0.0
+        self._amplitude: float = 0.0
 
         # Configure Window Characteristics
         flags = (
@@ -298,6 +306,12 @@ class DynamicIsland(QWidget):
         self._auto_collapse_timer.setSingleShot(True)
         self._auto_collapse_timer.timeout.connect(self._on_auto_collapse)
 
+        # Lightweight 30 FPS perimeter edge illumination timer
+        self._glow_timer = QTimer(self)
+        self._glow_timer.setInterval(33)
+        self._glow_timer.timeout.connect(self._step_glow)
+        self._glow_timer.start()
+
         # Build UI Structure
         self._init_ui()
 
@@ -320,17 +334,17 @@ class DynamicIsland(QWidget):
     def _init_ui(self) -> None:
         """Construct collapsed pill and expanded companion layouts."""
         self._root_layout = QVBoxLayout(self)
-        self._root_layout.setContentsMargins(8, 6, 8, 6)
-        self._root_layout.setSpacing(4)
+        self._root_layout.setContentsMargins(5, 3, 5, 3)
+        self._root_layout.setSpacing(2)
 
         # ── Collapsed Header Row ──
         self._header_row = QWidget(self)
         self._header_layout = QHBoxLayout(self._header_row)
-        self._header_layout.setContentsMargins(4, 0, 4, 0)
-        self._header_layout.setSpacing(8)
+        self._header_layout.setContentsMargins(1, 0, 1, 0)
+        self._header_layout.setSpacing(4)
 
         # Left: Miniature Holographic Arc Reactor (5-layer)
-        self._core = IslandCore(self._header_row, model=self._model, size=34)
+        self._core = IslandCore(self._header_row, model=self._model, size=30)
         self.core = self._core  # Contract alias
         self._header_layout.addWidget(self._core)
 
@@ -344,14 +358,14 @@ class DynamicIsland(QWidget):
         self._brand_row = QWidget(self._text_container)
         self._brand_layout = QHBoxLayout(self._brand_row)
         self._brand_layout.setContentsMargins(0, 0, 0, 0)
-        self._brand_layout.setSpacing(4)
+        self._brand_layout.setSpacing(3)
 
-        self._lbl_identity = QLabel("J . A . R . V . I . S", self._brand_row)
-        self._lbl_identity.setFont(QFont("Consolas", 8, QFont.Weight.Bold))
-        self._lbl_identity.setStyleSheet(f"color: {COLOR_PRIMARY_CYAN}; letter-spacing: 1.5px;")
+        self._lbl_identity = QLabel("J.A.R.V.I.S", self._brand_row)
+        self._lbl_identity.setFont(QFont("Consolas", 7, QFont.Weight.Bold))
+        self._lbl_identity.setStyleSheet(f"color: {COLOR_PRIMARY_CYAN}; letter-spacing: 0.5px;")
 
-        self._lbl_dots = QLabel("••••", self._brand_row)
-        self._lbl_dots.setFont(QFont("Segoe UI", 6, QFont.Weight.Bold))
+        self._lbl_dots = QLabel("•••", self._brand_row)
+        self._lbl_dots.setFont(QFont("Segoe UI", 5, QFont.Weight.Bold))
         self._lbl_dots.setStyleSheet(f"color: {COLOR_MINT_CYAN};")
 
         self._brand_layout.addWidget(self._lbl_identity)
@@ -359,7 +373,7 @@ class DynamicIsland(QWidget):
         self._brand_layout.addStretch()
 
         self._lbl_status = QLabel(self._model.get_status_text(), self._text_container)
-        self._lbl_status.setFont(QFont("Segoe UI", 7, QFont.Weight.DemiBold))
+        self._lbl_status.setFont(QFont("Segoe UI", 6, QFont.Weight.DemiBold))
         self._lbl_status.setStyleSheet(f"color: {COLOR_NEUTRAL_TEXT};")
 
         self._text_layout.addWidget(self._brand_row)
@@ -367,16 +381,16 @@ class DynamicIsland(QWidget):
         self._header_layout.addWidget(self._text_container, 1)
 
         # Right: Symmetric Mirrored Audio Waveform
-        self._eq = MirroredWaveformWidget(self._header_row, bar_count=10, model=self._model)
-        self._eq.setFixedSize(36, 20)
+        self._eq = MirroredWaveformWidget(self._header_row, bar_count=9, model=self._model)
+        self._eq.setFixedSize(26, 16)
         self._header_layout.addWidget(self._eq)
 
         # Rightmost expand indicator button
         self._btn_toggle = QPushButton("▼" if not self._is_expanded else "▲", self._header_row)
-        self._btn_toggle.setFixedSize(16, 16)
+        self._btn_toggle.setFixedSize(14, 14)
         self._btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self._btn_toggle.setStyleSheet(
-            f"QPushButton {{ background: transparent; color: {COLOR_MUTED_TEXT}; border: none; font-size: 8px; }}"
+            f"QPushButton {{ background: transparent; color: {COLOR_MUTED_TEXT}; border: none; font-size: 7px; }}"
             f"QPushButton:hover {{ color: {COLOR_PRIMARY_CYAN}; }}"
         )
         self._btn_toggle.clicked.connect(self.toggle_expanded)
@@ -522,6 +536,7 @@ class DynamicIsland(QWidget):
         self._is_expanded = expanded
         self._btn_toggle.setText("▲" if self._is_expanded else "▼")
         self._expanded_panel.setVisible(self._is_expanded)
+        self._root_layout.activate()
 
         target_w = EXPANDED_W if self._is_expanded else COLLAPSED_W
         target_h = EXPANDED_H if self._is_expanded else COLLAPSED_H
@@ -599,6 +614,7 @@ class DynamicIsland(QWidget):
 
     def set_audio_level(self, level: float) -> None:
         """Ingest live audio amplitude [0.0, 1.0]."""
+        self._amplitude = max(0.0, min(1.0, float(level)))
         self._model.set_audio_level(level)
         self._eq.set_amplitude(level)
         if hasattr(self, "_expanded_waveform"):
@@ -612,6 +628,7 @@ class DynamicIsland(QWidget):
         self.update()
 
     def _on_audio_changed(self, level: float) -> None:
+        self._amplitude = max(0.0, min(1.0, float(level)))
         self._eq.set_amplitude(level)
         if hasattr(self, "_expanded_waveform"):
             self._expanded_waveform.set_amplitude(level)
@@ -629,7 +646,47 @@ class DynamicIsland(QWidget):
     def _on_core_activity_changed(self, pct: float) -> None:
         self._core_gauge.set_percentage(pct)
 
-    # ── Positioning and Screen Events ────────────────────────────────────────
+    # ── Positioning, DPI Scaling, and Animation Ticks ─────────────────────────
+
+    def get_dpi_scale(self) -> float:
+        """Calculate screen DPI scaling ratio relative to standard 96 DPI baseline."""
+        screen = self.screen() or (QApplication.primaryScreen() if QApplication.instance() else None)
+        if screen:
+            dpi = screen.logicalDotsPerInch()
+            return max(1.0, dpi / 96.0)
+        return 1.0
+
+    def _step_glow(self) -> None:
+        """Lightweight 30 FPS timer callback driving animated perimeter edge lighting."""
+        if not self.isVisible():
+            return
+
+        state = self._model.get_state()
+        if state == IslandState.IDLE:
+            step = 0.035
+        elif state == IslandState.LISTENING:
+            step = 0.05
+        elif state == IslandState.THINKING:
+            step = 0.12
+        elif state == IslandState.SPEAKING:
+            step = 0.07 + 0.08 * self._amplitude
+        elif state == IslandState.ERROR:
+            step = 0.04
+        else:
+            step = 0.09
+
+        self._glow_phase = (self._glow_phase + step) % (2.0 * math.pi)
+        self.update()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        if hasattr(self, "_glow_timer") and not self._glow_timer.isActive():
+            self._glow_timer.start()
+
+    def hideEvent(self, event) -> None:
+        if hasattr(self, "_glow_timer") and self._glow_timer.isActive():
+            self._glow_timer.stop()
+        super().hideEvent(event)
 
     def reposition(self) -> None:
         """Recalculate and apply screen positioning."""
@@ -646,26 +703,118 @@ class DynamicIsland(QWidget):
         p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         rect = QRectF(1.0, 1.0, self.width() - 2.0, self.height() - 2.0)
-        radius = 21.0 if not self._is_expanded else 14.0
+        radius = (self.height() / 2.0 - 1.0) if not self._is_expanded else 14.0
 
         theme = self._model.get_theme_colors()
         border_hex = theme.get("border", COLOR_PRIMARY_CYAN)
-        border_color = QColor(border_hex)
+        glow_hex = theme.get("glow", COLOR_PRIMARY_CYAN)
+        state = self._model.get_state()
 
+        # Dynamic Edge Illumination & State Modulation
+        if state == IslandState.IDLE:
+            breath = 0.78 + 0.22 * math.sin(self._glow_phase * 1.6)
+            base_alpha = 135.0 * breath
+        elif state == IslandState.LISTENING:
+            base_alpha = 195.0
+        elif state == IslandState.THINKING:
+            pulse = 0.82 + 0.18 * math.sin(self._glow_phase * 3.2)
+            base_alpha = 185.0 * pulse
+        elif state == IslandState.SPEAKING:
+            base_alpha = min(255.0, 145.0 + self._amplitude * 110.0)
+        elif state == IslandState.ERROR:
+            alarm = 0.70 + 0.30 * math.sin(self._glow_phase * 4.5)
+            base_alpha = 215.0 * alarm
+        else:
+            base_alpha = 140.0
+
+        if not self._model.is_mic_active():
+            base_alpha *= 0.55  # Dimmed when muted
+
+        if self._is_hovered:
+            base_alpha = min(255.0, base_alpha * 1.3 + 35.0)  # Smooth hover illumination
+
+        # 1. Soft Edge Glow & Gentle Ambient Halo (2 outer passes)
+        halo_color = QColor(glow_hex)
+        p.setBrush(Qt.BrushStyle.NoBrush)
+
+        halo_color.setAlpha(max(10, int(base_alpha * 0.18)))
+        p.setPen(QPen(halo_color, 2.8))
+        p.drawRoundedRect(rect.adjusted(-1.5, -1.5, 1.5, 1.5), radius + 1.5, radius + 1.5)
+
+        halo_color.setAlpha(max(15, int(base_alpha * 0.42)))
+        p.setPen(QPen(halo_color, 1.8))
+        p.drawRoundedRect(rect.adjusted(-0.6, -0.6, 0.6, 0.6), radius + 0.6, radius + 0.6)
+
+        # 2. Translucent Background Surface
         surface_color = QColor(COLOR_BACKGROUND)
         surface_color.setAlpha(228)
-
-        # 1. Subtle Outer Ambient Cyan Glow
-        glow_alpha = 195 if self._is_hovered else 150
-        glow_pen = QPen(border_color, 1.4)
-        border_color.setAlpha(glow_alpha)
-        p.setPen(glow_pen)
         p.setBrush(QBrush(surface_color))
+
+        # 3. Thin Outer Border
+        border_color = QColor(border_hex)
+        border_color.setAlpha(min(255, int(base_alpha)))
+        p.setPen(QPen(border_color, 1.2))
         p.drawRoundedRect(rect, radius, radius)
 
-        # 2. Inner Edge Rim Highlight
+        # 4. Slightly Brighter Curved End Caps (specular corner accents)
+        if not self._is_expanded:
+            accent_color = QColor(COLOR_ENERGY_HIGHLIGHT if state == IslandState.SPEAKING else COLOR_MINT_CYAN)
+            accent_color.setAlpha(min(255, int(base_alpha * 0.55)))
+            p.setPen(QPen(accent_color, 1.0))
+            # Left semicircular cap accent
+            p.drawArc(QRectF(1.0, 1.0, (radius * 2.0), (radius * 2.0)), 90 * 16, 180 * 16)
+            # Right semicircular cap accent
+            p.drawArc(QRectF(rect.right() - radius * 2.0, 1.0, (radius * 2.0), (radius * 2.0)), -90 * 16, 180 * 16)
+
+        # 5. Small Moving Light Highlights / Traveling Light Photon Sweep
+        w_straight = max(0.0, rect.width() - 2.0 * radius)
+        semi_len = math.pi * radius
+        total_p = 2.0 * w_straight + 2.0 * semi_len
+
+        if total_p > 0.0:
+            def _get_perimeter_pos(t_norm: float) -> Tuple[float, float]:
+                d = (t_norm % 1.0) * total_p
+                if d < w_straight:
+                    return (rect.left() + radius + d, rect.top())
+                d -= w_straight
+                if d < semi_len:
+                    ang = -math.pi / 2.0 + (d / semi_len) * math.pi
+                    return (rect.right() - radius + radius * math.cos(ang), rect.top() + radius + radius * math.sin(ang))
+                d -= semi_len
+                if d < w_straight:
+                    return (rect.right() - radius - d, rect.bottom())
+                d -= w_straight
+                ang = math.pi / 2.0 + (d / semi_len) * math.pi
+                return (rect.left() + radius + radius * math.cos(ang), rect.top() + radius + radius * math.sin(ang))
+
+            # Primary traveling highlight photon
+            t1 = (self._glow_phase / (2.0 * math.pi)) % 1.0
+            x1, y1 = _get_perimeter_pos(t1)
+
+            # Draw glowing photon bead
+            p.setPen(Qt.PenStyle.NoPen)
+            photon_halo = QColor(COLOR_ENERGY_HIGHLIGHT if state in (IslandState.SPEAKING, IslandState.THINKING) else COLOR_PRIMARY_CYAN)
+            photon_halo.setAlpha(min(255, int(base_alpha * 0.5)))
+            p.setBrush(QBrush(photon_halo))
+            p.drawEllipse(QPointF(x1, y1), 3.2, 3.2)
+
+            photon_core = QColor("#FFFFFF")
+            photon_core.setAlpha(min(255, int(base_alpha * 0.9)))
+            p.setBrush(QBrush(photon_core))
+            p.drawEllipse(QPointF(x1, y1), 1.5, 1.5)
+
+            # Secondary trailing highlight for Thinking / Speaking
+            if state in (IslandState.THINKING, IslandState.SPEAKING):
+                t2 = (t1 + 0.5) % 1.0
+                x2, y2 = _get_perimeter_pos(t2)
+                p.setBrush(QBrush(photon_halo))
+                p.drawEllipse(QPointF(x2, y2), 2.5, 2.5)
+                p.setBrush(QBrush(photon_core))
+                p.drawEllipse(QPointF(x2, y2), 1.2, 1.2)
+
+        # 6. Inner Edge Rim Highlight
         inner_rect = rect.adjusted(1.0, 1.0, -1.0, -1.0)
-        inner_pen = QPen(QColor(COLOR_INNER_SURFACE), 1.0)
+        inner_pen = QPen(QColor(COLOR_INNER_SURFACE), 0.9)
         p.setPen(inner_pen)
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRoundedRect(inner_rect, max(1.0, radius - 1.0), max(1.0, radius - 1.0))
@@ -761,6 +910,8 @@ class DynamicIsland(QWidget):
 
     def closeEvent(self, event) -> None:
         """Halt timers and clean up resources on application exit."""
+        if hasattr(self, "_glow_timer") and self._glow_timer.isActive():
+            self._glow_timer.stop()
         if hasattr(self, "_auto_collapse_timer") and self._auto_collapse_timer.isActive():
             self._auto_collapse_timer.stop()
         if hasattr(self, "_anim") and self._anim.state() == QPropertyAnimation.State.Running:

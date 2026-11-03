@@ -258,15 +258,20 @@ def own_exes(chain: Optional[set[int]] = None) -> set[str]:
     found: set[str] = set()
     if sys.executable:
         found.add(os.path.normcase(sys.executable))
-    for pid in (chain or _chain_pids()):
-        try:
-            exe = psutil.Process(pid).exe()
-            if exe:
-                found.add(os.path.normcase(exe))
-        except Exception:
-            # A permission error, or a process that exited between the two
-            # calls. Either way it is one fewer path to compare against.
-            continue
+    # Only this process and its child processes belong to our binary group.
+    # Ancestors (like parent terminals) have their specific PIDs in `_chain_pids()`,
+    # but their executables must not be treated as our own binary.
+    try:
+        me = psutil.Process(os.getpid())
+        for proc in [me] + list(me.children(recursive=True)):
+            try:
+                exe = proc.exe()
+                if exe:
+                    found.add(os.path.normcase(exe))
+            except Exception:
+                continue
+    except Exception:
+        pass
     _OWN_EXES = found
     return _OWN_EXES
 
@@ -288,6 +293,13 @@ def _chain_pids() -> set[int]:
         parent, seen = me.parent(), set()
         while parent is not None and parent.pid not in seen and parent.pid > 1:
             seen.add(parent.pid)
+            try:
+                p_name = parent.name().lower()
+                # Stop walking up before reaching external IDEs or desktop shell
+                if any(x in p_name for x in ("explorer", "antigravity", "code", "devenv")):
+                    break
+            except Exception:
+                pass
             pids.add(parent.pid)
             try:
                 parent = parent.parent()
@@ -779,6 +791,55 @@ def _hwnds_for(pid: int) -> list[int]:
         return []
 
 
+def _raise_hwnd(hwnd: int) -> bool:
+    """Safely restore, bring to top, and focus a Windows HWND using thread input attachment."""
+    if _OS != "Windows" or not hwnd:
+        return False
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        SW_RESTORE = 9
+        HWND_TOPMOST = -1
+        HWND_NOTOPMOST = -2
+        SWP_NOMOVE = 0x0002
+        SWP_NOSIZE = 0x0001
+        SWP_SHOWWINDOW = 0x0040
+
+        try:
+            if user32.IsIconic(hwnd):
+                user32.ShowWindow(hwnd, SW_RESTORE)
+            else:
+                user32.ShowWindow(hwnd, 5)  # SW_SHOW
+            user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
+            user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
+            user32.BringWindowToTop(hwnd)
+            if user32.SetForegroundWindow(hwnd):
+                return True
+        except Exception:
+            pass
+
+        fore = user32.GetForegroundWindow()
+        if not fore:
+            return False
+        their = user32.GetWindowThreadProcessId(fore, None)
+        ours = kernel32.GetCurrentThreadId()
+        if their == ours:
+            return False
+        if not user32.AttachThreadInput(ours, their, True):
+            return False
+        try:
+            user32.BringWindowToTop(hwnd)
+            return bool(user32.SetForegroundWindow(hwnd))
+        finally:
+            user32.AttachThreadInput(ours, their, False)
+    except Exception as exc:
+        print(f"[appidentity] _raise_hwnd failed for hwnd {hwnd}: {exc}")
+        return False
+
+
 def focus(match: "Match") -> bool:
     """Bring an already-running application to the front. -> did it work.
 
@@ -831,33 +892,7 @@ def focus(match: "Match") -> bool:
             SWP_SHOWWINDOW = 0x0040
 
             def _raise(hwnd) -> bool:
-                try:
-                    if user32.IsIconic(hwnd):
-                        user32.ShowWindow(hwnd, SW_RESTORE)
-                    else:
-                        user32.ShowWindow(hwnd, 5) # SW_SHOW
-                    user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
-                    user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
-                    user32.BringWindowToTop(hwnd)
-                    if user32.SetForegroundWindow(hwnd):
-                        return True
-                except Exception:
-                    pass
-
-                fore = user32.GetForegroundWindow()
-                if not fore:
-                    return False
-                their = user32.GetWindowThreadProcessId(fore, None)
-                ours = kernel32.GetCurrentThreadId()
-                if their == ours:
-                    return False
-                if not user32.AttachThreadInput(ours, their, True):
-                    return False
-                try:
-                    user32.BringWindowToTop(hwnd)
-                    return bool(user32.SetForegroundWindow(hwnd))
-                finally:
-                    user32.AttachThreadInput(ours, their, False)
+                return _raise_hwnd(hwnd)
 
             for hwnd in hwnds:
                 if _raise(hwnd):
@@ -912,3 +947,67 @@ def focus(match: "Match") -> bool:
         except Exception:
             continue
     return False
+
+
+def focus_window(title: str) -> bool:
+    """Bring any window whose title matches `title` (case-insensitive substring) to the front."""
+    if not title or not title.strip():
+        return False
+    title_lower = title.strip().lower()
+
+    if _OS == "Windows":
+        try:
+            import ctypes
+            from ctypes import wintypes
+            user32 = ctypes.WinDLL("user32", use_last_error=True)
+            matched_hwnds: list[int] = []
+            WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+            def _find_window_by_title(hwnd, _lparam):
+                if user32.IsWindowVisible(hwnd) or user32.IsIconic(hwnd):
+                    length = user32.GetWindowTextLengthW(hwnd)
+                    if length > 0:
+                        buf = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(hwnd, buf, length + 1)
+                        if title_lower in buf.value.lower():
+                            matched_hwnds.append(int(hwnd))
+                return True
+
+            user32.EnumWindows(WNDENUMPROC(_find_window_by_title), 0)
+            for hwnd in matched_hwnds:
+                if _raise_hwnd(hwnd):
+                    return True
+        except Exception as exc:
+            print(f"[appidentity] focus_window Windows enumeration failed: {exc}")
+
+        # Fallback to WScript.Shell AppActivate
+        try:
+            script = f'(New-Object -ComObject WScript.Shell).AppActivate("{title}")'
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                capture_output=True, timeout=5,
+            )
+            return r.returncode == 0
+        except Exception:
+            return False
+
+    if _OS == "Darwin":
+        try:
+            script = (
+                f'tell application "System Events" to '
+                f'set frontmost of (first process whose name contains "{title}") to true'
+            )
+            r = subprocess.run(["osascript", "-e", script], capture_output=True, timeout=5)
+            return r.returncode == 0
+        except Exception:
+            return False
+
+    if _OS == "Linux":
+        try:
+            r = subprocess.run(["wmctrl", "-a", title], capture_output=True, timeout=5)
+            return r.returncode == 0
+        except Exception:
+            return False
+
+    return False
+
