@@ -1,5 +1,15 @@
 import platform as _platform
 import subprocess as _subprocess
+# ── Explicit Windows AppUserModelID ───────────────────────────────────────────
+# Crucial for Windows Taskbar grouping: without this, Windows treats pythonw.exe
+# as a generic console/script host and displays either the Python logo or nothing.
+if _platform.system() == "Windows":
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ajinkyachalke.jarvis.008")
+    except Exception:
+        pass
+
 
 # ── Smart subprocess launcher on Windows ───────────────────────────────────────
 # Suppress black console popups for background CLI/console tools, but PRESERVE

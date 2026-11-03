@@ -207,6 +207,7 @@ class IslandPresentationModel(QObject):
     output_status_changed = pyqtSignal(bool)
     activity_changed = pyqtSignal(str)
     core_activity_changed = pyqtSignal(float)
+    quit_requested = pyqtSignal()
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
@@ -329,6 +330,10 @@ class IslandPresentationModel(QObject):
 
     def get_core_activity_pct(self) -> float:
         return self._core_activity_pct
+
+    def notify_quit(self) -> None:
+        """Signal application-wide quit from Dynamic Island presentation model."""
+        self.quit_requested.emit()
 
     # ── Audio Smoothing Filter ───────────────────────────────────────────────
 

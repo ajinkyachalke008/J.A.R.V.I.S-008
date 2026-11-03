@@ -47,7 +47,27 @@ from PyQt6.QtGui import (
 if platform.system() == "Windows":
     try:
         import ctypes
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("fatihmakes.marklvi.assistant.56")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ajinkyachalke.jarvis.008")
+    except Exception:
+        pass
+
+def _apply_windows_taskbar_icon(hwnd_int: int, ico_path: Path) -> None:
+    """Explicitly assign native HICON to Windows HWND for the taskbar and Alt+Tab switcher."""
+    if platform.system() != "Windows" or not ico_path.exists():
+        return
+    try:
+        import ctypes
+        from ctypes import wintypes
+        user32 = ctypes.windll.user32
+        ico_str = str(ico_path.resolve())
+        # IMAGE_ICON = 1, LR_LOADFROMFILE = 0x0010, LR_DEFAULTSIZE = 0x0040
+        hicon_big = user32.LoadImageW(None, ico_str, 1, 0, 0, 0x0010 | 0x0040)
+        hicon_small = user32.LoadImageW(None, ico_str, 1, 16, 16, 0x0010)
+        WM_SETICON = 0x0080
+        if hicon_big:
+            user32.SendMessageW(hwnd_int, WM_SETICON, 1, hicon_big)
+        if hicon_small:
+            user32.SendMessageW(hwnd_int, WM_SETICON, 0, hicon_small)
     except Exception:
         pass
 # Video playback for the HUD. Part of PyQt6, so it costs no new dependency —
@@ -4378,6 +4398,7 @@ class MainWindow(QMainWindow):
         _ico_f = CONFIG_DIR / "jarvis.ico"
         if _ico_f.exists():
             self.setWindowIcon(QIcon(str(_ico_f)))
+            _apply_windows_taskbar_icon(int(self.winId()), _ico_f)
         self.setMinimumSize(_MIN_W, _MIN_H)
         self.resize(_DEFAULT_W, _DEFAULT_H)
 
@@ -4710,6 +4731,9 @@ class MainWindow(QMainWindow):
             self._island_model = IslandPresentationModel()
             self._island = DynamicIsland(parent=None, model=self._island_model)
             self._island.set_main_window(self)
+            self._island._on_quit_cb = self._force_quit
+            if hasattr(self._island_model, "quit_requested"):
+                self._island_model.quit_requested.connect(self._force_quit)
             self._island.hide_requested.connect(self._refresh_island_btn)
             if get_dynamic_island_config().get("enabled", True):
                 self._island.show()
@@ -5295,6 +5319,12 @@ class MainWindow(QMainWindow):
         else:
             self.showFullScreen()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        _ico_f = CONFIG_DIR / "jarvis.ico"
+        if _ico_f.exists():
+            _apply_windows_taskbar_icon(int(self.winId()), _ico_f)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         cw = self.centralWidget()
@@ -5802,6 +5832,24 @@ class MainWindow(QMainWindow):
 
         self._emergency_halt_btn = _row(QPushButton("🚨  EMERGENCY STOP [ESC]"), self._BTN_DIM)
         self._emergency_halt_btn.clicked.connect(self._trigger_emergency_stop)
+
+        self._quit_btn = _row(QPushButton("❌  QUIT / STOP JARVIS"))
+        self._quit_btn.setStyleSheet("""
+            QPushButton {
+                background: #1C0A0E;
+                color: #FF4466;
+                border: 1px solid #FF2255;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                font-size: 7pt;
+                border-radius: 2px;
+            }
+            QPushButton:hover {
+                background: #FF2255;
+                color: #FFFFFF;
+            }
+        """)
+        self._quit_btn.clicked.connect(self._force_quit)
 
         w.adjustSize()
         return w
@@ -7340,28 +7388,30 @@ class MainWindow(QMainWindow):
             except Exception:
                 pass
         if hasattr(self, "_tray_icon") and self._tray_icon:
-            self._tray_icon.hide()
-        QApplication.quit()
+            try:
+                self._tray_icon.hide()
+            except Exception:
+                pass
+        if hasattr(self, "hud") and hasattr(self.hud, "_tmr"):
+            try:
+                self.hud._tmr.stop()
+            except Exception:
+                pass
+        app = QApplication.instance()
+        if app:
+            app.quit()
+
+        # Hard-exit watchdog: ensures process terminates completely without audio/thread hangs
+        def _terminate_process():
+            time.sleep(0.35)
+            import os
+            os._exit(0)
+
+        threading.Thread(target=_terminate_process, daemon=True).start()
 
     def closeEvent(self, event):
-        # When closed with 'X', keep running in background with visible logo in taskbar tray
-        if hasattr(self, "_tray_icon") and self._tray_icon and self._tray_icon.isVisible():
-            self.hide()
-            self._tray_icon.showMessage(
-                "JARVIS — Running in Background",
-                "JARVIS is listening for 'Hey Jarvis'. Click the tray icon at the bottom bar to reopen.",
-                QSystemTrayIcon.MessageIcon.Information,
-                2500
-            )
-            event.ignore()
-        else:
-            if hasattr(self, "_island") and self._island:
-                try:
-                    self._island.close()
-                    self._island = None
-                except Exception:
-                    pass
-            event.accept()
+        event.accept()
+        self._force_quit()
 
 
     def _check_config(self) -> bool:
@@ -7421,10 +7471,14 @@ class JarvisUI:
         self._win.show()
         self._win.raise_()
         self._win.activateWindow()
+        if _ico_f.exists():
+            _apply_windows_taskbar_icon(int(self._win.winId()), _ico_f)
         if sys.platform == "win32":
             try:
                 import ctypes
                 ctypes.windll.user32.SetForegroundWindow(int(self._win.winId()))
+                # Notify Windows Explorer of association/icon refresh
+                ctypes.windll.shell32.SHChangeNotify(0x08000000, 0x0000, None, None)
             except Exception:
                 pass
 

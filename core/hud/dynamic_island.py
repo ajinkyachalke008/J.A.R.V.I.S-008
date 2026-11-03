@@ -123,10 +123,29 @@ class MirroredWaveformWidget(QWidget):
         self._timer.timeout.connect(self._step)
         self._timer.start()
 
+    def start(self) -> None:
+        if hasattr(self, "_timer") and not self._timer.isActive():
+            self._timer.start()
+
+    def stop(self) -> None:
+        if hasattr(self, "_timer") and self._timer.isActive():
+            self._timer.stop()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self.start()
+
+    def hideEvent(self, event) -> None:
+        self.stop()
+        super().hideEvent(event)
+
     def set_amplitude(self, amp: float) -> None:
         self._amplitude = max(0.0, min(1.0, float(amp)))
 
     def _step(self) -> None:
+        if not self.isVisible():
+            self.stop()
+            return
         self._phase = (self._phase + 0.18) % (2.0 * math.pi)
         for i in range(self._bar_count):
             # Center bars naturally have higher default dynamic range
@@ -408,6 +427,7 @@ class DynamicIsland(QWidget):
         # 1. Expanded Waveform Banner
         self._expanded_waveform = MirroredWaveformWidget(self._expanded_panel, bar_count=22, model=self._model)
         self._expanded_waveform.setFixedHeight(22)
+        self._expanded_waveform.stop()  # initially collapsed, stop idle timer
         self._expanded_vbox.addWidget(self._expanded_waveform)
 
         # 2. Status & Metrics Grid
@@ -507,11 +527,19 @@ class DynamicIsland(QWidget):
         self._btn_interrupt.clicked.connect(self.interrupt_speech)
         self._btn_bar_layout.addWidget(self._btn_interrupt)
 
-        self._btn_hide = QPushButton("⦸ Hide", self._btn_bar)
+        self._btn_hide = QPushButton("👁 Hide", self._btn_bar)
+        self._btn_hide.setToolTip("Temporarily hide the Dynamic Island")
         self._btn_hide.setCursor(Qt.CursorShape.PointingHandCursor)
         self._btn_hide.setStyleSheet(btn_base_style)
         self._btn_hide.clicked.connect(self.hide_island)
         self._btn_bar_layout.addWidget(self._btn_hide)
+
+        self._btn_quit = QPushButton("❌ Stop", self._btn_bar)
+        self._btn_quit.setToolTip("Completely stop and terminate JARVIS")
+        self._btn_quit.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_quit.setStyleSheet(btn_danger_style)
+        self._btn_quit.clicked.connect(self.quit_jarvis)
+        self._btn_bar_layout.addWidget(self._btn_quit)
 
         self._expanded_vbox.addWidget(self._btn_bar)
         self._root_layout.addWidget(self._expanded_panel)
@@ -537,6 +565,10 @@ class DynamicIsland(QWidget):
         self._is_expanded = expanded
         self._btn_toggle.setText("▲" if self._is_expanded else "▼")
         self._expanded_panel.setVisible(self._is_expanded)
+        if self._is_expanded:
+            self._expanded_waveform.start()
+        else:
+            self._expanded_waveform.stop()
         self._root_layout.activate()
 
         target_w = EXPANDED_W if self._is_expanded else COLLAPSED_W
@@ -603,6 +635,20 @@ class DynamicIsland(QWidget):
         self.hide_requested.emit()
         self.hide()
 
+    def quit_jarvis(self) -> None:
+        """Completely stop and terminate JARVIS application."""
+        if hasattr(self, "_on_quit_cb") and callable(self._on_quit_cb):
+            self._on_quit_cb()
+        elif self._main_window is not None and hasattr(self._main_window, "_force_quit"):
+            self._main_window._force_quit()
+        else:
+            if self._model is not None and hasattr(self._model, "notify_quit"):
+                self._model.notify_quit()
+            self.close()
+            app = QApplication.instance()
+            if app:
+                app.quit()
+
     def on_mute_clicked(self) -> None:
         """Contract alias for toggle_mute."""
         self.toggle_mute()
@@ -663,8 +709,12 @@ class DynamicIsland(QWidget):
             return
 
         state = self._model.get_state()
+        target_interval = 50 if state == IslandState.IDLE else 33
+        if self._glow_timer.interval() != target_interval:
+            self._glow_timer.setInterval(target_interval)
+
         if state == IslandState.IDLE:
-            step = 0.035
+            step = 0.05
         elif state == IslandState.LISTENING:
             step = 0.05
         elif state == IslandState.THINKING:
