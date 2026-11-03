@@ -73,14 +73,12 @@ All 7 visual components identified in `lib/orbScene.ts` of the reference reposit
 
 1. **Outer Holographic Shell:** Large wireframe sphere (`IcosahedronGeometry`, radius 2.35) rotating slowly along multiple axes with warm amber lines (`#FFAA30`).
 2. **Rotating Meridian Panels:** 30 segmented meridian arcs with variable inclinations, rotating in opposing directions at differential velocities.
-3. **High-Density Dynamic Holographic Core & Voice Visualizer:**
-   - **Dual Geodesic Crystals:** Counter-spinning `IcosahedronGeometry` (radius 0.28) and `DodecahedronGeometry` (radius 0.19) with glowing vertex spark points.
-   - **Tri-Axial Slotted Gyroscopic Gimbal Rings:** 3 graduated containment gimbals spinning in counter-opposing orbits, accelerating up to $3\times$ during vocal spikes.
-   - **Dual-Axis 3D Voice Equalizer Waveform Rings:** 48 equatorial radial bars and 36 cross-axial vertical bars forming a spherical soundwave cage that erupts dynamically with speech frequencies ($0.02 \to 0.48$ length).
-   - **Multi-tier Volumetric Plasma Heart:** 4-stage layered emission shells expanding and contracting ($1.0 \to 1.9\times$) in sync with natural human speech cadence and live audio amplitude.
-   - **Dynamic Radiant Energy Tendrils:** 18 electrical arc discharges crackling outward toward the inner shell with high-frequency micro-jitter.
-   - **Harmonic Sonic Shockwaves:** 4 concentric pulse rings expanding outward from $r=0.25 \to 2.4$ at voice-accelerated rates.
-   - **Core Ember Sparks:** 140 magnetic micro-particles orbiting in localized vortex turbulence.
+3. **Balanced Cinematic Holographic Core:**
+   - **Geodesic Wireframe:** Rotating `IcosahedronGeometry` (radius 0.28) wireframe in warm highlight amber (`#FFCC66`).
+   - **Inner Core Glow Sphere:** Additive-blended soft glowing central energy sphere (`SphereGeometry`, radius 0.18).
+   - **Atmospheric Aura Sphere:** Concentric warm halo (`SphereGeometry`, radius 0.55) providing natural depth and smooth vocal breathing.
+   - **Reactor Containment Ring:** Thin, clean equatorial containment ring (`RingGeometry`, radius $0.70 \to 0.73$) orbiting gracefully.
+   - **Natural Vocal Dilation:** The core smoothly dilates ($1.0 \to 1.55\times$) with speech cadence and audio amplitude, eliminating visual clutter (such as excessive spiky bars or spark bursts) while keeping clear real-time vocal feedback.
 4. **Floating Technical Text:** Over 160 technical telemetry glyphs (`SYS.INIT()`, `CORE.ACTIVE`, `AI.PROCESS`, `0xFF3A`, etc.) generated via HTML5 2D canvas texture sprites positioned radially in 3D space with billboarding.
 5. **Orbiting Debris System:** 220 individual particles (`TetrahedronGeometry` / `OctahedronGeometry`) tracing elliptical orbital paths with randomized inclinations and velocities.
 6. **Ambient Dust Field:** GPU-efficient particle system consisting of 2,000 vertices (`BufferGeometry` with `PointsMaterial`) drifting radially with subtle luminance flicker.
@@ -147,20 +145,17 @@ tests\test_security_safeguards.py ...                                    [100%]
 
 ---
 
-## Continuous 3D Floating & Dynamic Vocal Animation Upgrades
+## Refined Motion & Balanced Vocal Breathing
 
-### 1. Accelerated Continuous 3D Floating & Multi-Axis Gyroscopic Drift
-- **Base Rotation Speed:** Increased by over $2.4\times$ (from $0.0035$ to $0.0085$ rad/frame), making continuous movement crisp, active, and distinctly visible even in `IDLE` state.
-- **Layer Counter-Rotations:** Outer wireframe shell rotates forward ($+0.0065$), segmented meridian panels rotate at $+0.0095$, secondary arc shell rotates in counter-direction ($-0.0085$), and the inner spiral core spins at $-0.0175$ with z-axis precession ($+0.0095$).
-- **Anti-Gravity Multi-Axis Bobbing:** Fluid compound sinusoidal floating on Y ($0.13$), X ($0.05$), pitch tilt X ($0.075$), and roll tilt Z ($0.060$).
+### 1. Graceful Continuous 3D Floating & Multi-Axis Gyro Drift
+- **Calm, Elegant Rotation Speed:** Set base rotation to a smooth $0.0038\text{ rad/frame}$, providing a continuous, living gyroscopic spin without frenetic or disorienting speeds.
+- **Layer Counter-Rotations:** Outer wireframe shell rotates at $+0.0024$, meridian panels rotate at $+0.0028$, secondary arc shell counter-rotates at $-0.0020$, and the inner core counter-rotates at $-0.0065$.
+- **Subtle Anti-Gravity Bobbing:** Gentle compound sinusoidal floating on Y ($0.055$), X tilt ($0.025$), and Z tilt ($0.020$) keeps the orb floating naturally.
 
-### 2. High-Response "During Talk" Vocal Animation
-- **Qt 6 Response Parsing Fix:** Resolved root cause in `qwebchannel.js` line 93 where Qt 6 returns `message.data` instead of `message.response`, ensuring `orbBridge` is immediately available to JavaScript.
-- **Dual-Axis 3D Audio Frequency Waveform Visualizer:** 48 equatorial radial bars and 36 vertical cross-axial bars that react in real time to speech amplitude and harmonics, shooting outward up to $0.48$ radius length on voice spikes.
-- **Multi-Harmonic Vocal Cadence Envelope:** Combines real-time audio amplitude with a multi-frequency synthetic speech cadence wave (`16.0 Hz`, `26.0 Hz`, `45.0 Hz`) so that whenever JARVIS is in `SPEAKING` state, the core pulses rhythmically with human speech inflections even between audio chunk pauses.
-- **Plasma Heart Volumetric Dilation:** Inner plasma heart expands ($1.15 \to 1.95\times$) with speech spikes and harmonic micro-vibrations (`22.0 Hz`).
-- **Gimbal & Arc Acceleration:** Tri-axial containment gimbals accelerate $3\times$ while 18 radiant energy arc tendrils crackle with high-voltage jitter.
-- **Harmonic Shockwave Waves:** 4 concentric pulse rings travel outward continuously at voice-accelerated rates.
+### 2. Clean, Iconic "Old-Like" Vocal Animation
+- **Restored Elegant Core Structure:** Restored the iconic glowing icosahedron wireframe (`#FFCC66`), glowing white core sphere, soft amber atmospheric aura, and thin equatorial containment ring.
+- **Removed Visual Clutter:** Eliminated the busy 84-bar audio equalizer spikes, electrical arc tendrils, and chaotic ember particles in favor of a clean, cinematic aesthetic.
+- **Smooth Vocal Dilation:** The core softly and rhythmically expands and brightens ($1.0 \to 1.55\times$) in response to JARVIS's voice and live microphone input, producing a warm, cinematic pulse without visual noise.
 
 ---
 
