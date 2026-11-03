@@ -25,6 +25,11 @@ def _ensure_desktop_attached() -> None:
     """Ensure the calling thread is attached to the active interactive desktop (winsta0/default)."""
     try:
         import win32service
+        cur_winsta = win32service.GetProcessWindowStation()
+        if cur_winsta:
+            name = win32service.GetUserObjectInformation(cur_winsta, 2)
+            if "winsta0" in str(name).lower():
+                return
         hwinsta = win32service.OpenWindowStation("winsta0", False, 0x037F)
         hwinsta.SetProcessWindowStation()
         hdesk = win32service.OpenDesktop("default", 0, False, 0x01FF)
