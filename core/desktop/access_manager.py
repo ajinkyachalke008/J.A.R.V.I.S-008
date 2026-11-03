@@ -1,5 +1,5 @@
 """
-core/desktop/access_manager.py — Centralized desktop access and permission manager for JARVIS MARK LVI.
+core/desktop/access_manager.py — Centralized desktop access and permission manager for J.A.R.V.I.S. — 008.
 
 Ensures no desktop interaction (screen reading, mouse motion, clicking, typing)
 happens without explicit user authorization, verified permissions, and session timeout guards.

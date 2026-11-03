@@ -1,13 +1,13 @@
 # DYNAMIC ISLAND 2.0 IMPLEMENTATION REPORT
-## JARVIS MARK LVI — Miniature Holographic Arc Reactor & Voice-Reactive Desktop Companion
+## J.A.R.V.I.S. — 008 — Miniature Holographic Arc Reactor & Voice-Reactive Desktop Companion
 
 ---
 
 ## 1. Executive Summary & Existing Implementation Analysis
-The JARVIS MARK LVI Dynamic Island has been successfully upgraded to **Dynamic Island 2.0**, translating the cinematic golden mechanical arc reactor reference into an animated, high-performance, voice-reactive desktop companion.
+The J.A.R.V.I.S. — 008 Dynamic Island has been successfully upgraded to **Dynamic Island 2.0**, translating the cinematic golden mechanical arc reactor reference into an animated, high-performance, voice-reactive desktop companion.
 
 ### Architectural Grounding
-- **Pre-existing Architecture**: JARVIS MARK LVI runs on PyQt6 with Gemini Live and configurable local AI backends. The central HUD features a 3D Three.js orb bridge, animated face HUD, and QPainter reactor.
+- **Pre-existing Architecture**: J.A.R.V.I.S. — 008 runs on PyQt6 with Gemini Live and configurable local AI backends. The central HUD features a 3D Three.js orb bridge, animated face HUD, and QPainter reactor.
 - **Dynamic Island 1.0 Baseline**: Established an independent, unparented top-level `QWidget` (`parent=None`) anchored to the display top-center beneath the laptop webcam bezel with zero keyboard focus theft (`WindowDoesNotAcceptFocus`, `WA_ShowWithoutActivating`, and `WM_MOUSEACTIVATE -> MA_NOACTIVATE`).
 - **Dynamic Island 2.0 Upgrade**: Replaced the simplified circular icon with a full 5-layer animated holographic arc reactor, replaced static bars with a symmetric mirrored audio waveform visualizer, added a circular core activity gauge, expanded real-time status metrics, and introduced double-click restore, auto-collapse pause on hover, and persistent configuration controls.
 

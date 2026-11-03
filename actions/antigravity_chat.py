@@ -1,7 +1,7 @@
 """
 actions/antigravity_chat.py — Direct Agent Chat input delivery for Google Antigravity IDE.
 
-Allows JARVIS MARK LVI to insert or submit prompts, instructions, code, or queries
+Allows J.A.R.V.I.S. — 008 to insert or submit prompts, instructions, code, or queries
 directly into the Google Antigravity IDE agent conversation interface.
 """
 from __future__ import annotations

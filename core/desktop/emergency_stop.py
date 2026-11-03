@@ -1,5 +1,5 @@
 """
-core/desktop/emergency_stop.py — Instant Emergency Stop Controller for JARVIS MARK LVI.
+core/desktop/emergency_stop.py — Instant Emergency Stop Controller for J.A.R.V.I.S. — 008.
 
 Provides redundant, immediate fail-safe interrupts:
 1. Global Hotkey: Ctrl + Alt + Escape (or Esc when desktop automation is running)

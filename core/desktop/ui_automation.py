@@ -1,5 +1,5 @@
 """
-core/desktop/ui_automation.py — Native Windows UI Automation inspection engine for JARVIS MARK LVI.
+core/desktop/ui_automation.py — Native Windows UI Automation inspection engine for J.A.R.V.I.S. — 008.
 """
 from __future__ import annotations
 

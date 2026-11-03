@@ -1,5 +1,5 @@
 """
-Pytest configuration and global fixtures for JARVIS MARK LVI.
+Pytest configuration and global fixtures for J.A.R.V.I.S. — 008.
 Ensures Qt OpenGL context sharing and QtWebEngine hooks are initialized before any QApplication is spawned.
 """
 import sys

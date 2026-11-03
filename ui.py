@@ -98,8 +98,9 @@ def _read_full_config() -> dict:
 
 # Single source of truth for the release name — the window title, the header
 # badge and the readme must never disagree again.
-APP_VERSION  = "MARK LVI"
-APP_PROTOCOL = APP_VERSION.split()[-1]
+APP_NAME     = "J.A.R.V.I.S."
+APP_VERSION  = "008"
+APP_PROTOCOL = "008"
 
 _DEFAULT_W, _DEFAULT_H = 980, 700
 _MIN_W,     _MIN_H     = 820, 580
@@ -4364,7 +4365,7 @@ class MainWindow(QMainWindow):
 
         # Load customization from config
         _cfg = _read_full_config()
-        self._assistant_name: str = (_cfg.get("assistant_name") or "JARVIS").strip()
+        self._assistant_name: str = (_cfg.get("assistant_name") or "J.A.R.V.I.S.").strip()
         _display = self._assistant_name.upper()
 
         # Apply the saved UI colour BEFORE panels/stylesheets are built
@@ -4372,7 +4373,8 @@ class MainWindow(QMainWindow):
         if _ui_color and _ui_color.lower() != DEFAULT_UI_COLOR:
             apply_ui_accent(_ui_color)
 
-        self.setWindowTitle(f"{_display} — {APP_VERSION}")
+        _disp_name = "J.A.R.V.I.S." if _display in ("JARVIS", "J.A.R.V.I.S", "J.A.R.V.I.S.") else _display
+        self.setWindowTitle(f"{_disp_name} — {APP_VERSION}")
         _ico_f = CONFIG_DIR / "jarvis.ico"
         if _ico_f.exists():
             self.setWindowIcon(QIcon(str(_ico_f)))
@@ -5199,14 +5201,14 @@ class MainWindow(QMainWindow):
             if _os == "Windows":
                 pythonw  = python.parent / "pythonw.exe"
                 target   = str(pythonw if pythonw.exists() else python)
-                lnk      = str(desktop / "J.A.R.V.I.S.lnk")
+                lnk      = str(desktop / "J.A.R.V.I.S. — 008.lnk")
                 icon_loc = str(ico_path) if ico_path.exists() else f"{target},0"
                 self._create_lnk_windows(lnk, target, str(script),
                                          str(script.parent), icon_loc)
 
             # ── macOS — proper .app bundle (no Terminal window) ───────────────
             elif _os == "Darwin":
-                app     = desktop / "J.A.R.V.I.S.app"
+                app     = desktop / "J.A.R.V.I.S. — 008.app"
                 mac_dir = app / "Contents" / "MacOS"
                 res_dir = app / "Contents" / "Resources"
                 mac_dir.mkdir(parents=True, exist_ok=True)
@@ -6882,11 +6884,12 @@ class MainWindow(QMainWindow):
     def _apply_name_update(self, name: str, user_name: str, ui_color: str = "",
                            voice: str = ""):
         """Update all name/theme-dependent UI elements and persist to config."""
-        self._assistant_name = name.strip() or "JARVIS"
+        self._assistant_name = name.strip() or "J.A.R.V.I.S."
         display = self._assistant_name.upper()
-        self.setWindowTitle(f"{display} — {APP_VERSION}")
-        self._title_lbl.setText(display)
-        if display in ("JARVIS", "J.A.R.V.I.S"):
+        _disp_name = "J.A.R.V.I.S." if display in ("JARVIS", "J.A.R.V.I.S", "J.A.R.V.I.S.") else display
+        self.setWindowTitle(f"{_disp_name} — {APP_VERSION}")
+        self._title_lbl.setText(_disp_name)
+        if display in ("JARVIS", "J.A.R.V.I.S", "J.A.R.V.I.S."):
             self._sub_lbl.setText("Just A Rather Very Intelligent System")
         else:
             self._sub_lbl.setText("Personal AI Assistant")
@@ -7240,7 +7243,7 @@ class MainWindow(QMainWindow):
         icon = QIcon(str(_ico_f)) if _ico_f.exists() else self.windowIcon()
 
         self._tray_icon = QSystemTrayIcon(icon, self)
-        self._tray_icon.setToolTip("JARVIS — MARK LVI (Online)")
+        self._tray_icon.setToolTip(f"J.A.R.V.I.S. — {APP_VERSION} (Online)")
 
         menu = QMenu()
         menu.setStyleSheet(f"""
@@ -7301,8 +7304,8 @@ class MainWindow(QMainWindow):
             try:
                 if hasattr(self, "_tray_icon") and self._tray_icon and self._tray_icon.isVisible():
                     self._tray_icon.showMessage(
-                        "JARVIS — MARK LVI",
-                        "JARVIS is online. System tray icon is active at bottom bar.",
+                        f"J.A.R.V.I.S. — {APP_VERSION}",
+                        "J.A.R.V.I.S. is online. System tray icon is active at bottom bar.",
                         QSystemTrayIcon.MessageIcon.Information,
                         2500,
                     )

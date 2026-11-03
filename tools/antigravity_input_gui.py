@@ -27,7 +27,7 @@ import antigravity_ide_api
 class AntigravityInputWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("JARVIS — Antigravity Direct Input Channel")
+        self.setWindowTitle("J.A.R.V.I.S. — 008 // Antigravity Direct Input Channel")
         self.setFixedSize(540, 420)
 
         ico_path = PROJECT_ROOT / "config" / "jarvis.ico"

@@ -1,5 +1,5 @@
 """
-core/desktop — Universal Desktop Perception, Automation, and Safety System for JARVIS MARK LVI.
+core/desktop — Universal Desktop Perception, Automation, and Safety System for J.A.R.V.I.S. — 008.
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# JARVIS MARK LVI — Master Implementation Report
+# J.A.R.V.I.S. — 008 — Master Implementation Report
 **Universal Desktop Agent, Visual Context Intelligence & Creation Studio**
 
 **Repository:** `https://github.com/ajinkyachalke008/Mark-LVI.git`  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-All six major features and architectural phases from the Master Implementation Prompt have been engineered, integrated, and verified against the live JARVIS MARK LVI desktop application:
+All six major features and architectural phases from the Master Implementation Prompt have been engineered, integrated, and verified against the live J.A.R.V.I.S. — 008 desktop application:
 
 1. **Full Desktop Access Mode** — Explicitly authorized sessions, granular permission scopes (`SCREEN_CAPTURE`, `MOUSE_MOVE`, `MOUSE_CLICK`, `KEYBOARD_INPUT`, etc.), automatic idle timeouts, and redundant Emergency Stop systems (`Ctrl+Alt+Escape`, mouse flick to screen corners, HUD halt button).
 2. **Advanced Desktop Perception Engine** — Multi-monitor MSS virtual desktop capture, Windows DPI Awareness v2, native Windows UI Automation (`pywinauto` UIA backend), fallback OCR cascade, and normalized coordinate visual grounding with element centroid snapping.

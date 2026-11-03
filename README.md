@@ -1,15 +1,15 @@
-# ⚡ J.A.R.V.I.S. — MARK LVI
+# ⚡ J.A.R.V.I.S. — 008
 
 <div align="center">
 
-<img src="assets/jarvis-logo.png" width="170" height="170" alt="JARVIS Mark-LVI Logo" style="border-radius: 50%;" />
+<img src="assets/jarvis-logo.png" width="170" height="170" alt="J.A.R.V.I.S. — 008 Logo" style="border-radius: 50%;" />
 
 <p align="center">
   <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Dynamic Island 2.0 • Antigravity Neural Bridge</strong>
 </p>
 
 [![Status](https://img.shields.io/badge/System_Status-OPERATIONAL-00f2fe?style=for-the-badge&logo=statuspage&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Release](https://img.shields.io/badge/Release-Mark--LVI_(v56.0)-4facfe?style=for-the-badge&logo=git&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI/releases)
+[![Release](https://img.shields.io/badge/Release-008-4facfe?style=for-the-badge&logo=git&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI/releases)
 [![Python](https://img.shields.io/badge/Python-3.10_%7C_3.11_%7C_3.12-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-CC_BY--NC_4.0-f093fb?style=for-the-badge&logo=creative-commons&logoColor=white)](LICENSE)
 
@@ -25,7 +25,7 @@
   <a href="#-system-status--live-telemetry"><b>Live Status</b></a> •
   <a href="#-interface--capabilities-showcase"><b>Interface Tour</b></a> •
   <a href="#-key-capabilities"><b>Capabilities</b></a> •
-  <a href="#-whats-new-in-mark-lvi"><b>What's New</b></a> •
+  <a href="#-whats-new-in-008"><b>What's New</b></a> •
   <a href="#-quick-start"><b>Quick Start</b></a> •
   <a href="#-project-architecture"><b>Architecture</b></a> •
   <a href="#-security--data-privacy"><b>Security</b></a>
@@ -38,18 +38,18 @@
 ## 📡 System Status & Live Telemetry
 
 <div align="center">
-  <img src="assets/jarvis-status.svg" width="100%" alt="JARVIS Live Telemetry & Status" />
+  <img src="assets/jarvis-status.svg" width="100%" alt="J.A.R.V.I.S. — 008 Live Telemetry & Status" />
 </div>
 
 > [!NOTE]
-> Mark LVI introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**), coupled with an always-on **Dynamic Island 2.0** desktop companion and a **Google Antigravity IDE** Agent Chat bridge.
+> J.A.R.V.I.S. — 008 introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**), coupled with an always-on **Dynamic Island 2.0** desktop companion and a **Google Antigravity IDE** Agent Chat bridge.
 
 ---
 
 ## 📸 Interface & Capabilities Showcase
 
 <div align="center">
-  <img src="assets/jarvis-banner.png" width="100%" alt="JARVIS Mark-LVI Hero Banner" />
+  <img src="assets/jarvis-banner.png" width="100%" alt="J.A.R.V.I.S. — 008 Hero Banner" />
 </div>
 
 <br />
@@ -175,10 +175,10 @@
 
 ---
 
-## 🔄 What's New in Mark LVI
+## 🔄 What's New in 008
 
 ### 1. Dual Engine Architecture (Cloud + Local)
-Mark LVI untethers the assistant from proprietary cloud locks:
+J.A.R.V.I.S. — 008 untethers the assistant from proprietary cloud locks:
 - **Cloud Mode:** Runs directly on Gemini 3.1 Flash Live for natural sub-second audio conversation.
 - **Local Mode:** Switches seamlessly to on-device LLMs through any standard OpenAI-compatible server endpoint:
   - [Ollama](https://ollama.ai) (`http://localhost:11434/v1`)
@@ -310,7 +310,7 @@ On your first run, a setup wizard appears automatically. Alternatively, you can 
 ```json
 {
   "gemini_api_key": "YOUR_GEMINI_API_KEY",
-  "assistant_name": "Jarvis",
+  "assistant_name": "J.A.R.V.I.S.",
   "voice": "Puck",
   "wake_word_enabled": true
 }
@@ -437,7 +437,7 @@ Mark-LVI/
 
 ## 🔌 Antigravity IDE Direct Input API
 
-MARK LVI includes a full programmatic direct input channel into Google Antigravity IDE:
+J.A.R.V.I.S. — 008 includes a full programmatic direct input channel into Google Antigravity IDE:
 
 ### Python SDK Example
 ```python
@@ -453,7 +453,7 @@ success, message = controller.insert_prompt(
 print(f"Status: {message}")
 
 # 2. Insert prompt into active chat window as if typed by the user
-insert_prompt_to_chat("Analyze the system architecture of MARK LVI", submit=True)
+insert_prompt_to_chat("Analyze the system architecture of J.A.R.V.I.S. — 008", submit=True)
 
 # 3. Execute a command in Antigravity IDE's integrated terminal
 execute_terminal_command("git status", submit=True)

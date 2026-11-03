@@ -1,5 +1,5 @@
 """
-core/studio/studio_window.py — Native PyQt6 interactive Creation Studio window for JARVIS MARK LVI.
+core/studio/studio_window.py — Native PyQt6 interactive Creation Studio window for J.A.R.V.I.S. — 008.
 """
 from __future__ import annotations
 

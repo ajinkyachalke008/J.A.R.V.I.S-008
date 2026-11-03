@@ -2701,7 +2701,7 @@ def main():
             user32 = ctypes.windll.user32
             kernel32 = ctypes.windll.kernel32
             ERROR_ALREADY_EXISTS = 183
-            mutex = kernel32.CreateMutexW(None, False, "Local\\JARVIS_MARK_LVI_SINGLETON")
+            mutex = kernel32.CreateMutexW(None, False, "Local\\JARVIS_008_SINGLETON")
             if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
                 print("[JARVIS] An instance is already running. Raising existing window...")
                 def _enum_cb(hwnd, extra):
@@ -2710,8 +2710,8 @@ def main():
                         buf = ctypes.create_unicode_buffer(length + 1)
                         user32.GetWindowTextW(hwnd, buf, length + 1)
                         txt = buf.value.strip().replace('\u2014', '-')
-                        # Strict match: must start with "JARVIS - MARK" and exclude IDEs/text editors
-                        if txt.startswith("JARVIS - MARK") or txt == "JARVIS - MARK LVI":
+                        # Match J.A.R.V.I.S. - 008, JARVIS - 008, or legacy titles
+                        if any(sig in txt for sig in ("008", "JARVIS - 008", "J.A.R.V.I.S. - 008", "JARVIS - MARK", "JARVIS")):
                             lower = txt.lower()
                             if not any(bad in lower for bad in ("antigravity", "visual studio", ".md", ".py", ".txt", ".json", "chrome", "edge")):
                                 user32.ShowWindow(hwnd, 9)  # SW_RESTORE

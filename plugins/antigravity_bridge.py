@@ -49,7 +49,7 @@ PLUGIN = {
 
 def run(parameters: dict, player=None, session_memory=None) -> str:
     """
-    Standard MARK LVI plugin entrypoint.
+    Standard J.A.R.V.I.S. — 008 plugin entrypoint.
     Executes the requested action and returns a spoken response string for JARVIS.
     """
     if antigravity_ide_api is None:

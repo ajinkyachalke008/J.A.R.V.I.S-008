@@ -371,7 +371,7 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         except Exception as exc:
             return f"Failed to send: {exc}"
 
-    # Hand off to MARK LVI's native on-screen confirmation banner
+    # Hand off to J.A.R.V.I.S. — 008's native on-screen confirmation banner
     return confirm.request(
         key=f"dispatch_{file_path.name}_{app_name}",
         title=f"Send {file_path.name} to {target_summary}?",

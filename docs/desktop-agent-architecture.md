@@ -1,8 +1,8 @@
-# JARVIS MARK LVI — Universal Desktop Agent, Visual Context Intelligence & Creation Studio Architecture
+# J.A.R.V.I.S. — 008 — Universal Desktop Agent, Visual Context Intelligence & Creation Studio Architecture
 
 ## 1. Overview & System Mission
 
-JARVIS MARK LVI provides an autonomous desktop assistant, context-aware visual intelligence system, and native multi-domain engineering studio for Windows 10 and 11.
+J.A.R.V.I.S. — 008 provides an autonomous desktop assistant, context-aware visual intelligence system, and native multi-domain engineering studio for Windows 10 and 11.
 
 The assistant combines real-time multimodal perception with safe, human-like desktop automation and precision creation tools (Mechanical CAD, Circuit Schematics, Workflow Diagrams).
 

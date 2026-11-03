@@ -1,5 +1,5 @@
 """
-tools/verify_all_live.py — Comprehensive Live System Verification for JARVIS MARK LVI.
+tools/verify_all_live.py — Comprehensive Live System Verification for J.A.R.V.I.S. — 008.
 Verifies all 6 features from the Master Implementation Plan end-to-end.
 """
 import sys
@@ -234,7 +234,7 @@ def test_feature_6_universal_creation_studio():
 
 def main():
     print("\n" + "#" * 70)
-    print("  🚀 JARVIS MARK LVI — LIVE END-TO-END CAPABILITY AUDIT")
+    print("  🚀 J.A.R.V.I.S. — 008 — LIVE END-TO-END CAPABILITY AUDIT")
     print("#" * 70)
     
     start_total = time.time()

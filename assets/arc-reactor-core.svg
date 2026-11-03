@@ -91,7 +91,7 @@
 
   <!-- Title Header -->
   <text x="36" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#ffd166" letter-spacing="1.5">
-    MINIATURE ARC REACTOR <tspan fill="#64748b" font-weight="500"> // 5-LAYER HOLOGRAPHIC SCHEMATIC &amp; VOICE REACTIVITY</tspan>
+    J.A.R.V.I.S. — 008 <tspan fill="#64748b" font-weight="500"> // MINIATURE ARC REACTOR // 5-LAYER SCHEMATIC</tspan>
   </text>
   <line x1="36" y1="38" x2="814" y2="38" stroke="#13243a" stroke-width="1" />
 
@@ -198,3 +198,4 @@
     </g>
   </g>
 </svg>
+

@@ -1,5 +1,5 @@
 """
-actions/desktop_agent.py — Autonomous multi-step desktop automation agent for JARVIS MARK LVI.
+actions/desktop_agent.py — Autonomous multi-step desktop automation agent for J.A.R.V.I.S. — 008.
 """
 from __future__ import annotations
 

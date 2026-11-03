@@ -1,5 +1,5 @@
 """
-core/desktop/action_verifier.py — Pre/post action execution verification for JARVIS MARK LVI.
+core/desktop/action_verifier.py — Pre/post action execution verification for J.A.R.V.I.S. — 008.
 """
 from __future__ import annotations
 

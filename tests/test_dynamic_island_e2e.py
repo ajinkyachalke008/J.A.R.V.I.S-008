@@ -1,6 +1,6 @@
 """
 tests/test_dynamic_island_e2e.py — Comprehensive 4-Tier End-to-End Test Suite
-for JARVIS MARK LVI Dynamic Island & Persistent Holographic Desktop Companion.
+for J.A.R.V.I.S. — 008 Dynamic Island & Persistent Holographic Desktop Companion.
 
 Taxonomy:
 - Tier 1: Feature Coverage (>=5 tests per feature group across 6 groups, 35 features)
@@ -934,7 +934,7 @@ def test_t4_s01_startup_and_tray_persistence(qapp):
 
     # Step 1: Startup
     main_win = QWidget()
-    main_win.setWindowTitle("JARVIS - MARK LVI")
+    main_win.setWindowTitle("J.A.R.V.I.S. — 008")
     main_win.show()
     island = DynamicIsland(parent=None)
     island.show()

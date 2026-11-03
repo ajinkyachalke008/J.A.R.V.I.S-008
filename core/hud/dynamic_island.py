@@ -238,7 +238,7 @@ class CircularActivityGauge(QWidget):
 
 class DynamicIsland(QWidget):
     """
-    Floating, topmost Dynamic Island 2.0 desktop companion for JARVIS MARK LVI.
+    Floating, topmost Dynamic Island 2.0 desktop companion for J.A.R.V.I.S. — 008.
     """
 
     # Signals for external listeners
@@ -314,6 +314,7 @@ class DynamicIsland(QWidget):
 
         # Build UI Structure
         self._init_ui()
+        self.setToolTip("J.A.R.V.I.S. — 008 (Dynamic Island)")
 
         # Connect to Presentation Model
         self._model.state_changed.connect(self._on_state_changed)
@@ -360,7 +361,7 @@ class DynamicIsland(QWidget):
         self._brand_layout.setContentsMargins(0, 0, 0, 0)
         self._brand_layout.setSpacing(3)
 
-        self._lbl_identity = QLabel("J.A.R.V.I.S", self._brand_row)
+        self._lbl_identity = QLabel("J.A.R.V.I.S.", self._brand_row)
         self._lbl_identity.setFont(QFont("Consolas", 7, QFont.Weight.Bold))
         self._lbl_identity.setStyleSheet(f"color: {COLOR_PRIMARY_CYAN}; letter-spacing: 0.5px;")
 
