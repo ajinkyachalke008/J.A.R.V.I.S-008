@@ -72,6 +72,13 @@
 
 ## 🌟 Key Capabilities
 
+### 🔮 Iron Man 3D Holographic Orb HUD
+- **Hardware-Accelerated WebGL Centerpiece:** Authentic Iron Man / Ultron-inspired 3D holographic energy orb embedded directly into the central JARVIS HUD via QtWebEngine and Three.js.
+- **7-Layer Holographic Architecture:** Layered geodesic outer shell, 30 segmented rotating meridian arcs, glowing inner core, 160+ floating 3D telemetry glyphs, 220 orbiting debris particles, and dynamic expanding scanning rings.
+- **Live State & Audio Reactivity:** Center energy core smoothly breathes and pulses with live user and assistant vocal amplitude, shifting color, rotation velocity, and bloom across `IDLE`, `LISTENING`, `THINKING`, and `SPEAKING` states.
+- **Interactive Orbit Controls:** Full 3D camera navigation (left-click drag to rotate, right-click drag to pan, scroll wheel to zoom, press `R` to reset).
+- **Three Centerpiece Modes:** Seamless hot-swapping between `🔮 3D HOLOGRAPHIC ORB`, `🧑 ANIMATED FACE`, and 2D vector `◉ REACTOR CORE` with zero reload overhead.
+
 ### 🧑‍🎤 Holographic Avatar & Facial Geometry
 - **Software 3D Engine:** An animated human head rendered via pure software rasterization (`PyQt6.QtGui.QPainter`). No dedicated GPU or heavy game engine required.
 - **Formant & Transcript Lip-Sync:** Produces ~50 expressive mouth shapes per second calculated from acoustic audio formants fused with text visemes.
@@ -161,6 +168,13 @@ Mark LVI untethers the assistant from proprietary cloud locks:
 - **Workflow Architecture:** Process flowcharts, decision nodes, and autonomous agent loop diagrams.
 - **Multi-Format Exporters:** Export to standard **AutoCAD R12/2000 ASCII DXF**, scalable **SVG**, high-res **PNG**, and native **JSON**.
 - **CAD Demonstrator Included:** Built-in precision mechanical mounting plate ($120\text{ mm} \times 80\text{ mm}$, corner fillets, 4 M4 holes, center cutout, dimensions).
+
+### 8. Iron Man 3D Holographic Orb HUD Integration (Ultron Engine)
+- **Embedded WebGL Three.js Viewport:** 3D animated holographic energy sphere embedded inside `HudCanvas` via PyQt6-WebEngine with hardware acceleration (ANGLE Direct3D11).
+- **Offline IIFE Self-Contained Bundle:** Single minified local bundle (`assets/orb/orb_bundle.js`) eliminating CORS and network dependencies for instant offline loading.
+- **Dynamic 7-Layer Visual Structure:** Outer geodesic sphere, segmented rotating meridian rings, glowing inner core, 160+ floating technical HUD text sprites, 220 orbiting particle debris, and scanning pulse rings.
+- **Bidirectional QWebChannel Bridge:** Python-to-JavaScript IPC (`core/hud/orb_bridge.py`) routing live assistant states (`IDLE`, `LISTENING`, `THINKING`, `SPEAKING`, `MUTED`) and live vocal amplitude with 60 Hz smoothing.
+- **Interactive Controls:** OrbitControls with mouse pan/zoom/rotate and keyboard reset (`R`). Full fallback to 2D vector reactor core when WebEngine is unavailable.
 
 ---
 

@@ -27,10 +27,17 @@ else:
 os.environ.setdefault("QT_LOGGING_RULES", "qt.multimedia.*=false")
 
 from PyQt6.QtCore import (
+    QCoreApplication,
     QEasingCurve, QLineF, QMimeData, QObject, QParallelAnimationGroup, QPointF,
     QPoint, QPropertyAnimation, QRect, QRectF, QSize, QSizeF, Qt, QTimer,
     QUrl, pyqtSignal,
 )
+
+# Enable shared OpenGL contexts for hardware-accelerated WebEngine/WebGL rendering
+try:
+    QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True)
+except Exception:
+    pass
 from PyQt6.QtGui import (
     QBrush, QColor, QConicalGradient, QDragEnterEvent, QDropEvent, QFont,
     QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPainter, QPainterPath,
@@ -278,8 +285,9 @@ class _SysMetrics:
         self._nv_unix   = None         # cached (lib, dev) for Linux/macOS NVML
         self._wmi_conn  = None         # cached WMI connection (creating one is slow)
         self._wmi_ok    = None         # None=untested, False=unavailable here
-        t = threading.Thread(target=self._loop, daemon=True)
-        t.start()
+        if "PYTEST_CURRENT_TEST" not in os.environ and "pytest" not in sys.modules:
+            t = threading.Thread(target=self._loop, daemon=True)
+            t.start()
 
     def _loop(self):
         while self._running:
@@ -435,12 +443,51 @@ class HudCanvas(QWidget):
         # Which centrepiece to draw. Read once here and changed live by the
         # settings toggle; the avatar object is kept either way so switching
         # back is instant and costs no reload.
+        self._hud_style = "orb"
         try:
             from memory.config_manager import get_hud_style
-            self.hud_style = get_hud_style()
+            self._hud_style = get_hud_style()
         except Exception:
-            self.hud_style = "face"
+            self._hud_style = "orb"
         self._core_phase = 0.0
+
+        # 3D Holographic Orb (Iron Man / Ultron inspired Three.js WebGL engine)
+        self._web_view = None
+        self._orb_bridge = None
+        self._orb_channel = None
+        try:
+            from PyQt6.QtWebEngineWidgets import QWebEngineView
+            from PyQt6.QtWebEngineCore import QWebEngineSettings
+            from PyQt6.QtWebChannel import QWebChannel
+            from core.hud.orb_bridge import OrbBridge
+
+            self._orb_bridge = OrbBridge(self)
+            self._orb_channel = QWebChannel(self)
+            self._orb_channel.registerObject("orbBridge", self._orb_bridge)
+
+            self._web_view = QWebEngineView(self)
+            self._web_view.setStyleSheet("background: transparent;")
+            self._web_view.page().setBackgroundColor(QColor(0, 0, 0, 0))
+            self._web_view.page().setWebChannel(self._orb_channel)
+
+            s = self._web_view.page().settings()
+            s.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
+            s.setAttribute(QWebEngineSettings.WebAttribute.WebGLEnabled, True)
+            s.setAttribute(QWebEngineSettings.WebAttribute.Accelerated2dCanvasEnabled, True)
+
+            index_path = (Path(__file__).parent / "assets" / "orb" / "index.html").resolve()
+            if index_path.exists():
+                self._web_view.load(QUrl(index_path.as_uri()))
+                if self.hud_style == "orb":
+                    self._web_view.show()
+                else:
+                    self._web_view.hide()
+            else:
+                self._web_view.hide()
+                self._web_view = None
+        except Exception:
+            self._web_view = None
+            self._orb_bridge = None
 
         self._tick       = 0
         self._scale      = 1.0
@@ -476,6 +523,30 @@ class HudCanvas(QWidget):
         self._tmr = QTimer(self)
         self._tmr.timeout.connect(self._step)
         self._tmr.start(16)
+
+    @property
+    def hud_style(self) -> str:
+        return getattr(self, "_hud_style", "orb")
+
+    @hud_style.setter
+    def hud_style(self, val: str) -> None:
+        self._hud_style = str(val or "orb").strip().lower()
+        if hasattr(self, "_web_view") and self._web_view is not None:
+            if self._hud_style == "orb":
+                self._web_view.show()
+            else:
+                self._web_view.hide()
+        self.update()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self._web_view is not None:
+            W, H = self.width(), self.height()
+            cy, fw = H / 2, min(W, H)
+            sy = cy + fw * 0.40
+            top_margin = 8
+            orb_h = max(80, int(sy - top_margin - 8))
+            self._web_view.setGeometry(0, top_margin, W, orb_h)
 
     def glance(self, dx: float, dy: float, hold: float = 1.1) -> None:
         """Ask the avatar to look somewhere for a moment (see HoloAvatar.glance)."""
@@ -614,6 +685,12 @@ class HudCanvas(QWidget):
         # a rate that changes with state jumps the rings the instant JARVIS
         # starts talking. Same lesson the head's sway taught.
         self._core_phase += min(0.10, max(0.0, dt))
+
+        # Forward real-time audio amplitude and state to the 3D Holographic Orb
+        if self._orb_bridge is not None and self.hud_style == "orb":
+            self._orb_bridge.set_audio_level(amp)
+            orb_st = "MUTED" if self.muted else ("SPEAKING" if self.speaking else self.state)
+            self._orb_bridge.set_state(orb_st)
 
         if self._avatar is not None and self.hud_style == "face":
             self._avatar.step(dt, amp, speaking=self.speaking,
@@ -872,6 +949,7 @@ class HudCanvas(QWidget):
         # capped by width, so it fills the HUD at any window size — including
         # fullscreen — without ever colliding with the status text below.
         _sy_status = cy + fw * 0.40
+
         if self._avatar is not None and self.hud_style == "face":
             _band_t = 12.0
             _band_h = max(60.0, _sy_status - 12.0 - _band_t)
@@ -892,10 +970,11 @@ class HudCanvas(QWidget):
                     _acc = qcol(C.PRI)
             self._avatar.paint(p, cx, _head_cy, _r_head, _main, _acc, qcol(C.BG))
 
-        # reactor core — the other centrepiece, and the fallback if the head
-        # could not be built. There is no third path: the old face.png branch
-        # was unreachable (no such file ships) and the bare orb it fell through
-        # to is what this replaces.
+        elif self.hud_style == "orb" and self._web_view is not None:
+            # 3D Holographic Orb is rendered live by the WebGL viewport in upper band
+            pass
+
+        # reactor core — the 2D vector fallback if orb/avatar is unavailable or style is 'core'
         else:
             _band_t = 12.0
             _band_h = max(60.0, _sy_status - 12.0 - _band_t)
@@ -6515,39 +6594,49 @@ class MainWindow(QMainWindow):
 
     def _refresh_hud_btn(self):
         from memory.config_manager import get_hud_style
-        face = get_hud_style() == "face"
-        # Neither state is "off", so both read as active — this is a choice
-        # between two things, not a switch with a disabled side.
+        style_key = get_hud_style()
         style = f"""
             QPushButton {{ background: {C.PANEL2}; color: {C.PRI};
                 border: 1px solid {C.BORDER_A}; border-radius: 3px;
                 text-align: left; padding: 0 8px; }}
             QPushButton:hover {{ color: {C.WHITE}; border: 1px solid {C.BORDER_B}; }}"""
-        self._hud_btn.setText("🧑  HUD: ANIMATED FACE" if face
-                              else "◉  HUD: REACTOR CORE")
+        if style_key == "orb":
+            self._hud_btn.setText("🔮  HUD: 3D HOLOGRAPHIC ORB")
+            self._hud_btn.setToolTip("Iron Man 3D holographic energy orb. Tap to switch to the animated face.")
+        elif style_key == "face":
+            self._hud_btn.setText("🧑  HUD: ANIMATED FACE")
+            self._hud_btn.setToolTip("An animated head that speaks your words. Tap to switch to the 2D reactor core.")
+        else:
+            self._hud_btn.setText("◉  HUD: REACTOR CORE")
+            self._hud_btn.setToolTip("A 2D vector reactor core. Tap to switch to the 3D holographic orb.")
         self._hud_btn.setStyleSheet(style)
-        self._hud_btn.setToolTip(
-            "An animated head that speaks your words and shows what JARVIS is "
-            "doing. Tap to switch to the reactor core."
-            if face else
-            "A reactor core that turns with the state and moves with your voice. "
-            "Tap to switch to the animated head.")
 
     def _toggle_hud_style(self):
-        """Swap the centrepiece. Both objects stay in memory, so the change is
-        instant and switching back costs nothing."""
+        """Swap the centrepiece between 3D Holographic Orb, Animated Face, and Reactor Core."""
         from memory.config_manager import get_hud_style, save_hud_style
-        want = "core" if get_hud_style() == "face" else "face"
+        current = get_hud_style()
+        if current == "orb":
+            want = "face"
+        elif current == "face":
+            want = "core"
+        else:
+            want = "orb"
         save_hud_style(want)
         try:
             self.hud.hud_style = want
+            if getattr(self.hud, "_web_view", None) is not None:
+                if want == "orb":
+                    self.hud._web_view.show()
+                else:
+                    self.hud._web_view.hide()
             self.hud.update()
         except Exception:
             pass
         self._refresh_hud_btn()
-        self._log.append_log(
-            "SYS: HUD switched to the animated face." if want == "face"
-            else "SYS: HUD switched to the reactor core.")
+        label = ("the 3D Holographic Orb" if want == "orb"
+                 else ("the animated face" if want == "face"
+                 else "the reactor core"))
+        self._log.append_log(f"SYS: HUD switched to {label}.")
 
     def _toggle_ptt(self):
         from memory.config_manager import (get_push_to_talk_enabled,
