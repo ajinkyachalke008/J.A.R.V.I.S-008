@@ -5,7 +5,7 @@
 <img src="assets/jarvis-logo.png" width="170" height="170" alt="JARVIS Mark-LVI Logo" style="border-radius: 50%;" />
 
 <p align="center">
-  <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Universal Creation Studio • Real-Time Voice</strong>
+  <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Dynamic Island 2.0 • Antigravity Neural Bridge</strong>
 </p>
 
 [![Status](https://img.shields.io/badge/System_Status-OPERATIONAL-00f2fe?style=for-the-badge&logo=statuspage&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
@@ -15,6 +15,7 @@
 
 [![Gemini Live](https://img.shields.io/badge/Multimodal_Engine-Gemini_3.1_Flash_Live-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Local Engine](https://img.shields.io/badge/Local_Fallback-Ollama_%7C_LM_Studio_%7C_vLLM-38ef7d?style=flat-square&logo=linux&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI)
+[![Dynamic Island](https://img.shields.io/badge/Dynamic_Island-v2.0_Arc_Reactor-ffd166?style=flat-square&logo=visualstudiocode&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
 [![Wake Word](https://img.shields.io/badge/Wake_Word-Offline_OpenWakeWord-ffd166?style=flat-square&logo=soundcharts&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
 [![Platform](https://img.shields.io/badge/OS-Windows_%7C_macOS_%7C_Linux-2b3137?style=flat-square&logo=windows&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI)
 [![Stars](https://img.shields.io/github/stars/ajinkyachalke008/Mark-LVI?style=flat-square&color=00f2fe)](https://github.com/ajinkyachalke008/Mark-LVI/stargazers)
@@ -41,7 +42,7 @@
 </div>
 
 > [!NOTE]
-> Mark LVI introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**).
+> Mark LVI introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**), coupled with an always-on **Dynamic Island 2.0** desktop companion and a **Google Antigravity IDE** Agent Chat bridge.
 
 ---
 
@@ -49,6 +50,20 @@
 
 <div align="center">
   <img src="assets/jarvis-banner.png" width="100%" alt="JARVIS Mark-LVI Hero Banner" />
+</div>
+
+<br />
+
+### 🏝️ Dynamic Island 2.0 — Miniature Holographic Arc Reactor Companion
+
+<div align="center">
+  <img src="assets/dynamic-island-showcase.jpg" width="100%" alt="JARVIS Dynamic Island 2.0 Showcase" />
+</div>
+
+<br />
+
+<div align="center">
+  <img src="assets/dynamic-island-preview.svg" width="100%" alt="Dynamic Island 2.0 Live Preview" />
 </div>
 
 <br />
@@ -71,6 +86,47 @@
 ---
 
 ## 🌟 Key Capabilities
+
+### 🏝️ Dynamic Island 2.0 (Miniature Holographic Companion)
+
+<div align="center">
+  <img src="assets/arc-reactor-core.svg" width="100%" alt="Miniature Arc Reactor 5-Layer Breakdown" />
+</div>
+
+- **5-Layer Animated Arc Reactor:** Pure `QPainter` vector rendering reproducing an authentic Stark Industries Arc Reactor at miniature scale (30 DIP):
+  1. *Nucleus:* Intense white-hot core with breathing glow and voice amplitude flare.
+  2. *Energy Sphere:* Geometric amber matrix wireframe with warm ambient illumination.
+  3. *Inner Containment Rings:* Dual counter-rotating precision notched rings.
+  4. *Outer Mechanical Cage:* High-contrast silver/white segmented structural frame rotating clockwise.
+  5. *Radial Connectors:* 4-axis mechanical alignment tabs (0°, 90°, 180°, 270°).
+- **Acoustic Voice Reactivity:** Smoothly modulates core flare radius, rotational velocity, and corona intensity in real time according to live vocal amplitude (RMS smoothing).
+- **Compact Refined Footprint ($180 \times 42\text{ DIP}$):** Optimized horizontal pill engineered to sit unobtrusively just below the webcam bezel at top-center (15% slimmer footprint, balanced proportions).
+- **30 FPS Traveling Photon Perimeter Sweep:** Futuristic cyan edge lighting featuring multi-pass border halo, continuous traveling light sweep, and smooth hover illumination.
+- **Always-On Persistence:** Runs as an independent top-level companion window (`Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool`). Remains active, listening, and voice-reactive even when the primary JARVIS window is minimized or hidden in the system tray.
+- **3-Way Synchronized Visibility Control:** Toggle the companion on or off seamlessly from:
+  1. *HUD Controls Drawer:* Dedicated `🏝  DYNAMIC ISLAND: ON/OFF` push button with cyan glow styling.
+  2. *Windows System Tray Menu:* Context-menu toggle item synchronized instantly.
+  3. *Expanded Island Dashboard:* Click the `Hide` button to collapse back to tray/drawer.
+- **Expandable Telemetry Dashboard:** Click the collapsed pill to reveal full telemetry: real-time microphone status, audio output, processing state, 87% core activity gauge, and quick actions (`Open JARVIS`, `Mute`, `Interrupt`, `Hide`).
+- **Flexible Display Placement:** Automatically snaps to display edges: Top Center (default), Top Left, Top Right, or Bottom Center with per-monitor DPI scaling.
+
+---
+
+### ⚡ Antigravity IDE Direct Input & Terminal Bridge
+
+<div align="center">
+  <img src="assets/antigravity-bridge.svg" width="100%" alt="Antigravity IDE Chat Input and Neural Bridge" />
+</div>
+
+- **Programmatic Agent Chat Input:** Injects user or assistant-generated prompts directly into Google Antigravity IDE's active agent chat window (`actions/antigravity_chat.py` and `core/integrations/antigravity_controller.py`).
+- **Target Chat Focus (`Ctrl+L`):** Automatically locates running Antigravity IDE windows, brings them to foreground with Win32 `HWND_TOPMOST` z-order focus, and triggers `Ctrl+L` to focus the chat input bar.
+- **Atomic Clipboard Guard:** Backs up existing developer clipboard text before delivery, injects the prompt payload via Unicode clipboard paste, and immediately restores original clipboard contents.
+- **Insert vs. Submit Modes:** Supports both interactive insertion (`submit=False` for developer review) and autonomous execution (`submit=True` for instant dispatch).
+- **Process Hierarchy Isolation:** `core/appidentity.py` ancestor process tracking ensures `Antigravity IDE.exe` and `explorer.exe` are never misidentified as JARVIS self-processes, guaranteeing reliable foreground elevation.
+- **Autonomous Tool Declaration:** Exposes `antigravity_chat` directly into Gemini Live's multimodal tool definitions for hands-free voice execution (*"Hey Jarvis, ask Antigravity to write unit tests for the Dynamic Island"*).
+- **Universal REST Bridge:** Integrated local HTTP server (`http://127.0.0.1:24680`) exposing `POST /api/chat` and `POST /api/terminal` for multi-language scripts and external tools.
+
+---
 
 ### 🔮 Iron Man 3D Holographic Orb HUD
 - **Hardware-Accelerated WebGL Centerpiece:** Authentic Iron Man / Ultron-inspired 3D holographic energy orb embedded directly into the central JARVIS HUD via QtWebEngine and Three.js.
@@ -116,13 +172,6 @@
 - **Workflow Architecture:** Process flowcharts, decision nodes, and autonomous agent loop diagrams.
 - **Multi-Format Exporters:** Export to standard **AutoCAD R12/2000 ASCII DXF**, scalable **SVG**, 300 DPI **PNG**, and native **JSON**.
 - **Demonstrator Project Included:** Precision mechanical mounting plate ($120\text{ mm} \times 80\text{ mm}$, corner fillets, 4 M4 holes, center cutout, dimensions) exported directly to `Desktop/JarvisCreations/`.
-
-### ⚡ Antigravity IDE Direct Input & Terminal Bridge
-- **Direct Prompt Injection:** Programmatically inserts prompts into Antigravity IDE's active chat window (`insert_prompt_to_chat(prompt_text, submit=True)`), typing and submitting as if typed by the user.
-- **Integrated Terminal Execution:** Programmatically sends and executes commands in Antigravity IDE's built-in terminal (`execute_terminal_command(command_text)`).
-- **Voice-Activated IDE Control:** Autonomous voice commands through JARVIS (*"Hey Jarvis, ask Antigravity to write unit tests"* or *"Hey Jarvis, run git status in Antigravity terminal"*).
-- **Universal REST Bridge:** Integrated local HTTP server (`http://127.0.0.1:24680`) exposing `POST /api/chat` and `POST /api/terminal` for multi-language scripts and external tools.
-- **Desktop Companion GUI:** Single-click desktop tool (`JARVIS Antigravity Input.lnk`) for rapid prompt delivery and terminal command execution.
 
 ---
 
@@ -176,32 +225,52 @@ Mark LVI untethers the assistant from proprietary cloud locks:
 - **Bidirectional QWebChannel Bridge:** Python-to-JavaScript IPC (`core/hud/orb_bridge.py`) routing live assistant states (`IDLE`, `LISTENING`, `THINKING`, `SPEAKING`, `MUTED`) and live vocal amplitude with 60 Hz smoothing.
 - **Interactive Controls:** OrbitControls with mouse pan/zoom/rotate and keyboard reset (`R`). Full fallback to 2D vector reactor core when WebEngine is unavailable.
 
+### 9. Dynamic Island 2.0 (Persistent Holographic Companion)
+- **Always-On Floating Pill:** Standalone, always-on-top desktop companion positioned at top-center display that stays alive and reactive even when the main HUD is minimized or closed to tray.
+- **5-Layer Miniature Arc Reactor Core:** 30 DIP vector reactor featuring white-hot nucleus, geometric amber sphere, counter-rotating inner rings, outer mechanical cage, and 4-axis stabilizers.
+- **Voice-Reactive Amplitude Dynamics:** Expands, flares, and pulses with user speech and synthesized assistant vocal output in real time.
+- **Refined Compact Footprint ($180 \times 42\text{ DIP}$):** 15% slimmer form factor with responsive DPI scaling and 30 FPS multi-pass traveling photon sweep along the pill perimeter.
+- **Multi-State Visual Pipeline:** Distinct holographic styles for `IDLE` (warm amber), `LISTENING` (cyan pulse), `THINKING` (electric blue), `SPEAKING` (golden burst), `PROCESSING` (rotating magenta), `MUTED` (red strike), `SLEEPING` (dim blue), and `ERROR` (warning flash).
+- **Interactive Expansion Dashboard:** Click to expand into an in-depth companion card with mic/speaker toggles, processing status, core activity gauge, interrupt button, and quick-restore for the main HUD.
+
+### 10. Antigravity IDE Agent Chat Input & Tool Dispatch
+- **Direct Agent Chat Automation:** Injects prompts directly into Google Antigravity IDE's agent chat input bar (`actions/antigravity_chat.py` and `core/integrations/antigravity_controller.py`).
+- **Foreground Elevation & Focus:** Uses Win32 `HWND_TOPMOST` raising, `SetForegroundWindow`, and `Ctrl+L` keystroke injection to activate the chat input area automatically.
+- **Atomic Clipboard Safety Guard:** Captures existing clipboard state, transfers the prompt, triggers the paste, and immediately restores developer clipboard data to prevent data corruption.
+- **Multimodal Voice Dispatch:** Integrated into Gemini Live tool definitions, allowing seamless conversational commands like *"Hey Jarvis, tell Antigravity to run unit tests"*.
+
+### 11. Controls Drawer Synchronization & Placement Engine
+- **HUD Controls Drawer Integration:** Dedicated `🏝  DYNAMIC ISLAND: ON/OFF` toggle button integrated directly into `_build_controls_drawer()` in `ui.py`.
+- **3-Way State Synchronization:** Seamless bidirectional synchronization between Main HUD Controls Drawer, Windows System Tray menu, and the floating companion's `Hide` button.
+- **Multi-Monitor Edge Snapping:** Configurable placement across displays (Top Center, Top Left, Top Right, Bottom Center).
+
 ---
 
 ## ⚙️ Architecture & Engine Providers
 
-```
+```text
                      ┌────────────────────────────────────────┐
                      │          JARVIS Core Runtime           │
                      │  (PyQt6 HUD • 3D Mesh • Tray Daemon)   │
-                     └───────────────────┬────────────────────┘
-                                         │
-             ┌───────────────────────────┴───────────────────────────┐
-             ▼                                                       ▼
-┌─────────────────────────┐                             ┌─────────────────────────┐
-│     Cloud Pipeline      │                             │     Local Pipeline      │
-│  Gemini 3.1 Flash Live  │                             │   Whisper / Ollama /    │
-│  (WebSocket Full-Duplex)│                             │   LM Studio / Kokoro    │
-└────────────┬────────────┘                             └────────────┬────────────┘
-             │                                                       │
-             └───────────────────────────┬───────────────────────────┘
-                                         ▼
-                     ┌────────────────────────────────────────┐
-                     │      Autonomous Execution Layer        │
-                     │  • Process Focus & Topmost Z-Order     │
-                     │  • Screen OCR & Grounded Bounding Boxes│
-                     │  • Verified Outcome Status Engine      │
-                     └────────────────────────────────────────┘
+                     └───────┬────────────────────────┬───────┘
+                             │                        │
+             ┌───────────────┴────────┐      ┌────────┴───────────────┐
+             ▼                        ▼      ▼                        ▼
+┌─────────────────────────┐ ┌───────────────┐ ┌────────────────────────┐
+│     Cloud Pipeline      │ │ Local Pipeline│ │   Dynamic Island 2.0   │
+│  Gemini 3.1 Flash Live  │ │ Whisper/Ollama│ │ (180x42 DIP Arc Core)  │
+│  (WebSocket Full-Duplex)│ │ LM Studio/vLLM│ │ (Always-On Companion)  │
+└────────────┬────────────┘ └───────┬───────┘ └────────────────────────┘
+             │                      │
+             └───────────┬──────────┘
+                         ▼
+┌──────────────────────────────────────────────────┐
+│          Autonomous Execution Layer              │
+│  • Process Focus & Topmost Z-Order Management    │
+│  • Screen OCR & Grounded Bounding Boxes (C2U)    │
+│  • Antigravity IDE Agent Chat & Terminal Bridge  │
+│  • Verified Outcome Status Engine (core.outcome) │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
@@ -257,10 +326,10 @@ launch.bat
 ```
 
 > [!TIP]
-> For silent background operation on Windows, run [`run.vbs`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/run.vbs). JARVIS will live in your system notification tray.
+> For silent background operation on Windows, run [`run.vbs`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/run.vbs). JARVIS will live in your system notification tray while the **Dynamic Island** sits elegantly at the top of your display.
 
 ### 6. Run Automated Verification Suite
-Verify desktop automation, permission gates, CAD demonstrators, and perception systems:
+Verify desktop automation, Dynamic Island 2.0, Antigravity integration, permission gates, and perception systems:
 ```bash
 python -m pytest -v tests/
 ```
@@ -272,6 +341,7 @@ python -m pytest -v tests/
 ```text
 Mark-LVI/
 ├── actions/                  # Core computer control and automation tools
+│   ├── antigravity_chat.py   # Antigravity IDE agent chat input tool declaration
 │   ├── creation_studio.py    # Universal Creation Studio action (CAD/Circuits/Workflows)
 │   ├── desktop_agent.py      # Autonomous multi-step desktop automation agent
 │   ├── browser_control.py    # Playwright browser driver & foreground window focus
@@ -282,6 +352,10 @@ Mark-LVI/
 │   ├── jarvis-logo.png       # Circular Arc-Reactor emblem logo
 │   ├── jarvis-banner.png     # Widescreen cinematic hero banner
 │   ├── jarvis-status.svg     # Animated SVG live telemetry component
+│   ├── dynamic-island-showcase.jpg # High-resolution Dynamic Island 2.0 showcase
+│   ├── dynamic-island-preview.svg  # Animated SVG Dynamic Island 2.0 live preview
+│   ├── antigravity-bridge.svg      # Animated SVG Antigravity IDE neural bridge
+│   ├── arc-reactor-core.svg        # Animated SVG 5-layer Arc Reactor schematic
 │   ├── jarvis-hud-avatar.png # 3D Avatar HUD interface screenshot
 │   └── jarvis-autonomous-control.png # Autonomous computer control screenshot
 ├── config/                   # Configuration parameters, icons, and TLS keys
@@ -300,6 +374,11 @@ Mark-LVI/
 │   │   ├── action_verifier.py# Pre/post action visual delta verification (core.outcome)
 │   │   ├── selection_overlay.py# Transparent Circle-to-Understand PyQt6 overlay
 │   │   └── task_planner.py   # Autonomous multi-step execution loop
+│   ├── hud/                  # HUD components and persistent companion
+│   │   ├── dynamic_island.py # Dynamic Island 2.0 (5-layer Arc Reactor, voice-reactive pill)
+│   │   └── orb_bridge.py     # Three.js WebGL holographic orb IPC bridge
+│   ├── integrations/         # External tool and IDE controllers
+│   │   └── antigravity_controller.py # Win32 window focus & clipboard-safe prompt delivery
 │   ├── studio/               # Universal Creation Studio engineering suite
 │   │   ├── models.py         # Unified CAD, Circuit, and Workflow project schema
 │   │   ├── schema.json       # JSON Schema definition
@@ -323,9 +402,18 @@ Mark-LVI/
 │   ├── github_manager.py     # GitHub workflow automation and repository inspection
 │   ├── file_dispatcher.py    # Autonomous filesystem management
 │   └── desktop_downloader.py # Automated file retrieval utilities
-├── tests/                    # Comprehensive Pytest test suite (21 tests)
+├── tests/                    # Comprehensive Pytest test suite (151 tests)
+│   ├── test_dynamic_island_v2.py
+│   ├── test_dynamic_island_refinement.py
+│   ├── test_dynamic_island_e2e.py
+│   ├── test_antigravity_integration.py
+│   ├── test_island_state_position.py
+│   ├── test_island_position_stress.py
+│   ├── test_island_state_stress.py
+│   ├── test_orb_hud.py
 │   ├── test_desktop_access.py
 │   ├── test_emergency_stop.py
+│   ├── test_circle_to_explain.py
 │   ├── test_perception_grounding.py
 │   ├── test_creation_studio.py
 │   ├── test_exporters.py
@@ -354,11 +442,20 @@ MARK LVI includes a full programmatic direct input channel into Google Antigravi
 ### Python SDK Example
 ```python
 from antigravity_ide_api import insert_prompt_to_chat, execute_terminal_command
+from core.integrations.antigravity_controller import AntigravityController
 
-# 1. Insert prompt into active chat window as if typed by the user
+# 1. Native Win32 Controller with Clipboard Preservation
+controller = AntigravityController()
+success, message = controller.insert_prompt(
+    "Please refactor the Dynamic Island animation loop for maximum FPS",
+    submit=True
+)
+print(f"Status: {message}")
+
+# 2. Insert prompt into active chat window as if typed by the user
 insert_prompt_to_chat("Analyze the system architecture of MARK LVI", submit=True)
 
-# 2. Execute a command in Antigravity IDE's integrated terminal
+# 3. Execute a command in Antigravity IDE's integrated terminal
 execute_terminal_command("git status", submit=True)
 ```
 

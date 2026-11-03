@@ -1,0 +1,200 @@
+<svg width="850" height="200" viewBox="0 0 850 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Canvas Gradient -->
+    <linearGradient id="arc-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040813" stop-opacity="0.97" />
+      <stop offset="50%" stop-color="#081424" stop-opacity="0.99" />
+      <stop offset="100%" stop-color="#02060e" stop-opacity="0.97" />
+    </linearGradient>
+
+    <!-- Intense Golden Core Radial Gradient -->
+    <radialGradient id="arc-nucleus-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="20%" stop-color="#fff8d6" />
+      <stop offset="45%" stop-color="#ffb300" />
+      <stop offset="75%" stop-color="#e65100" />
+      <stop offset="100%" stop-color="#3e1300" stop-opacity="0.9" />
+    </radialGradient>
+
+    <!-- Corona Flare Gradient -->
+    <radialGradient id="arc-corona" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffb703" stop-opacity="0.75" />
+      <stop offset="50%" stop-color="#fb8500" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#d62828" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Card Background -->
+    <linearGradient id="layer-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#091424" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#050a14" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="arc-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="intense-bloom" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur1" />
+      <feGaussianBlur stdDeviation="3" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur1" />
+        <feMergeNode in="blur2" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes arc-spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes arc-spin-ccw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes arc-breathe {
+      0%, 100% { transform: scale(0.94); opacity: 0.9; }
+      50% { transform: scale(1.12); opacity: 1; }
+    }
+    @keyframes pulse-ring {
+      0% { r: 52px; opacity: 0.8; }
+      50% { r: 62px; opacity: 0.2; }
+      100% { r: 52px; opacity: 0.8; }
+    }
+    .anim-cage {
+      transform-origin: 120px 105px;
+      animation: arc-spin-cw 15s linear infinite;
+    }
+    .anim-inner-ring {
+      transform-origin: 120px 105px;
+      animation: arc-spin-ccw 9s linear infinite;
+    }
+    .anim-nucleus {
+      transform-origin: 120px 105px;
+      animation: arc-breathe 2s ease-in-out infinite;
+    }
+    .anim-pulse-ring {
+      animation: pulse-ring 3s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- Container Box -->
+  <rect x="1" y="1" width="848" height="198" rx="14" fill="url(#arc-bg-grad)" stroke="#1a2d47" stroke-width="1.5" />
+
+  <!-- Corner Brackets -->
+  <path d="M 12 26 L 12 12 L 26 12" stroke="#ffaa00" stroke-width="2" fill="none" opacity="0.8" />
+  <path d="M 838 26 L 838 12 L 824 12" stroke="#ffaa00" stroke-width="2" fill="none" opacity="0.8" />
+  <path d="M 12 174 L 12 188 L 26 188" stroke="#ffaa00" stroke-width="2" fill="none" opacity="0.8" />
+  <path d="M 838 174 L 838 188 L 824 188" stroke="#ffaa00" stroke-width="2" fill="none" opacity="0.8" />
+
+  <!-- Title Header -->
+  <text x="36" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#ffd166" letter-spacing="1.5">
+    MINIATURE ARC REACTOR <tspan fill="#64748b" font-weight="500"> // 5-LAYER HOLOGRAPHIC SCHEMATIC &amp; VOICE REACTIVITY</tspan>
+  </text>
+  <line x1="36" y1="38" x2="814" y2="38" stroke="#13243a" stroke-width="1" />
+
+  <!-- ========================================================== -->
+  <!-- LEFT: 5-LAYER ANIMATED HOLOGRAPHIC REACTOR                 -->
+  <!-- ========================================================== -->
+  <g id="full-hologram-reactor">
+    <!-- Ambient Energy Flare -->
+    <circle cx="120" cy="105" r="70" fill="url(#arc-corona)" />
+    <circle cx="120" cy="105" r="54" fill="none" stroke="#ffaa00" stroke-width="1.2" stroke-dasharray="2 4" opacity="0.5" class="anim-pulse-ring" />
+
+    <!-- Static Mounting Frame -->
+    <circle cx="120" cy="105" r="50" fill="none" stroke="#2a4563" stroke-width="2" />
+    <circle cx="120" cy="105" r="44" fill="none" stroke="#3d628d" stroke-width="1" stroke-dasharray="4 4" />
+
+    <!-- 4-Axis Radial Stabilizer Connectors -->
+    <rect x="117" y="50" width="6" height="12" rx="2" fill="#d9e6f2" stroke="#5a80a6" stroke-width="0.8" />
+    <rect x="117" y="148" width="6" height="12" rx="2" fill="#d9e6f2" stroke="#5a80a6" stroke-width="0.8" />
+    <rect x="65" y="102" width="12" height="6" rx="2" fill="#d9e6f2" stroke="#5a80a6" stroke-width="0.8" />
+    <rect x="163" y="102" width="12" height="6" rx="2" fill="#d9e6f2" stroke="#5a80a6" stroke-width="0.8" />
+
+    <!-- Layer 4: Segmented Mechanical Outer Cage (Rotating Clockwise) -->
+    <g class="anim-cage">
+      <circle cx="120" cy="105" r="38" fill="none" stroke="#8faec9" stroke-width="3" stroke-dasharray="14 10" />
+      <circle cx="120" cy="105" r="32" fill="none" stroke="#ffd166" stroke-width="1.2" stroke-dasharray="8 12" opacity="0.75" />
+    </g>
+
+    <!-- Layer 3: Dual Counter-Rotating Containment Rings (Rotating Counter-Clockwise) -->
+    <g class="anim-inner-ring">
+      <circle cx="120" cy="105" r="26" fill="none" stroke="#ff9100" stroke-width="2.5" stroke-dasharray="10 8" />
+      <circle cx="120" cy="105" r="21" fill="none" stroke="#ffaa00" stroke-width="1" stroke-dasharray="4 4" />
+    </g>
+
+    <!-- Layer 1 & 2: Breathing Nucleus & Energy Sphere -->
+    <g class="anim-nucleus">
+      <circle cx="120" cy="105" r="16" fill="url(#arc-nucleus-grad)" filter="url(#intense-bloom)" />
+      <circle cx="120" cy="105" r="7" fill="#ffffff" />
+    </g>
+
+    <!-- HUD Crosshairs -->
+    <line x1="120" y1="92" x2="120" y2="118" stroke="#ffffff" stroke-width="0.8" opacity="0.4" />
+    <line x1="107" y1="105" x2="133" y2="105" stroke="#ffffff" stroke-width="0.8" opacity="0.4" />
+  </g>
+
+  <!-- ========================================================== -->
+  <!-- RIGHT: 5 ARCHITECTURAL LAYER CALLOUT CARDS                 -->
+  <!-- ========================================================== -->
+  <g transform="translate(230, 48)">
+
+    <!-- Layer 1 Card: Nucleus -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="112" height="68" rx="8" fill="url(#layer-card-grad)" stroke="#ffaa00" stroke-width="1" />
+      <circle cx="20" cy="20" r="8" fill="url(#arc-nucleus-grad)" />
+      <text x="34" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffd166">1. NUCLEUS</text>
+      <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" fill="#cbd5e1">Breathing Glow</text>
+      <text x="12" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8" fill="#8ca0ba">Voice Flare Core</text>
+    </g>
+
+    <!-- Layer 2 Card: Energy Sphere -->
+    <g transform="translate(122, 0)">
+      <rect x="0" y="0" width="112" height="68" rx="8" fill="url(#layer-card-grad)" stroke="#ff9100" stroke-width="1" />
+      <circle cx="20" cy="20" r="8" fill="none" stroke="#ffaa00" stroke-width="2" stroke-dasharray="3 3" />
+      <text x="34" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffb703">2. SPHERE</text>
+      <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" fill="#cbd5e1">Geometric Mesh</text>
+      <text x="12" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8" fill="#8ca0ba">Amber Matrix</text>
+    </g>
+
+    <!-- Layer 3 Card: Inner Rings -->
+    <g transform="translate(244, 0)">
+      <rect x="0" y="0" width="112" height="68" rx="8" fill="url(#layer-card-grad)" stroke="#00f2fe" stroke-width="1" />
+      <circle cx="20" cy="20" r="8" fill="none" stroke="#00f2fe" stroke-width="2" stroke-dasharray="4 2" />
+      <text x="34" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#00f2fe">3. RINGS</text>
+      <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" fill="#cbd5e1">Counter-Rotation</text>
+      <text x="12" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8" fill="#8ca0ba">Dual Containment</text>
+    </g>
+
+    <!-- Layer 4 Card: Outer Cage -->
+    <g transform="translate(366, 0)">
+      <rect x="0" y="0" width="112" height="68" rx="8" fill="url(#layer-card-grad)" stroke="#4facfe" stroke-width="1" />
+      <circle cx="20" cy="20" r="8" fill="none" stroke="#8faec9" stroke-width="2.5" stroke-dasharray="6 4" />
+      <text x="34" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#4facfe">4. CAGE</text>
+      <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" fill="#cbd5e1">Mechanical Frame</text>
+      <text x="12" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8" fill="#8ca0ba">Segmented Chassis</text>
+    </g>
+
+    <!-- Layer 5 Card: Radial Connectors -->
+    <g transform="translate(488, 0)">
+      <rect x="0" y="0" width="112" height="68" rx="8" fill="url(#layer-card-grad)" stroke="#e2e8f0" stroke-width="1" />
+      <rect x="16" y="16" width="8" height="8" rx="1.5" fill="#e2e8f0" />
+      <text x="34" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">5. AXES</text>
+      <text x="12" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" fill="#cbd5e1">4-Axis Stabilizers</text>
+      <text x="12" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8" fill="#8ca0ba">90° Alignment Tabs</text>
+    </g>
+
+    <!-- Bottom Feature Callout Summary -->
+    <g transform="translate(0, 80)">
+      <rect x="0" y="0" width="600" height="48" rx="8" fill="#040b17" stroke="#162940" stroke-width="1" />
+      <text x="14" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#ffd166">
+        VOICE REACTIVITY: <tspan fill="#cbd5e1" font-weight="400">Core expands dynamically with acoustic amplitude (RMS smoothing).</tspan>
+      </text>
+      <text x="14" y="36" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#00f2fe">
+        PERFORMANCE: <tspan fill="#cbd5e1" font-weight="400">Pure QPainter vector drawing on 30 FPS timer — zero GPU memory overhead.</tspan>
+      </text>
+    </g>
+  </g>
+</svg>
