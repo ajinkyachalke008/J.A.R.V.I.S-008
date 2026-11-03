@@ -45,10 +45,13 @@ API = "https://api.elevenlabs.io/v1"
 # sooner is worth more here than one that is slightly richer, and the flash
 # models are multilingual too. The higher-quality models stay available for
 # anybody who would rather have them.
+DEFAULT_VOICE_ID = "ibbx9zDYGvLgtYzRbqqG"
+
 MODELS = (
-    "eleven_flash_v2_5",        # fastest, multilingual
-    "eleven_turbo_v2_5",        # a little richer, still quick
-    "eleven_multilingual_v2",   # best quality, slowest
+    "eleven_flash_v2_5",        # fastest, multilingual (recommended default)
+    "eleven_turbo_v2_5",        # high quality, low latency
+    "eleven_multilingual_v2",   # maximum expressiveness & quality
+    "eleven_flash_v2",          # lightweight fallback
 )
 DEFAULT_MODEL = MODELS[0]
 
@@ -60,8 +63,11 @@ _MP3 = "mp3_44100_128"
 
 class ElevenLabsTTS:
     def __init__(self, cfg: dict):
-        self.key = (cfg.get("api_key") or "").strip()
-        self.voice_id = (cfg.get("voice_id") or "").strip()
+        import os
+        # API key from config or environment variable override
+        self.key = (cfg.get("api_key") or os.environ.get("ELEVENLABS_API_KEY") or "").strip()
+        # Prepopulate with user's custom voice ID if not already configured
+        self.voice_id = (cfg.get("voice_id") or DEFAULT_VOICE_ID).strip()
         self.model = (cfg.get("model") or DEFAULT_MODEL).strip()
         self.stability = _num(cfg.get("stability"), 0.5)
         self.similarity = _num(cfg.get("similarity"), 0.75)
@@ -96,7 +102,7 @@ class ElevenLabsTTS:
                 if piece:
                     yield piece
 
-    async def speak(self, text: str, voice: str = "") -> AsyncIterator[bytes]:
+    async def speak(self, text: str, voice: str = "", cl=None) -> AsyncIterator[bytes]:
         import httpx
 
         if voice:
@@ -109,10 +115,10 @@ class ElevenLabsTTS:
         if not text:
             return
 
-        async with httpx.AsyncClient(timeout=60.0) as cl:
+        async def _run_stream(client):
             fmt = self._format or _PCM
             try:
-                async for piece in self._emit(cl, text, fmt):
+                async for piece in self._emit(client, text, fmt):
                     yield piece
                 self._format = fmt
                 return
@@ -124,8 +130,42 @@ class ElevenLabsTTS:
                 else:
                     raise RuntimeError(f"{e.status} {_message(e.body)}") from None
 
-            async for piece in self._emit(cl, text, _MP3):
+            async for piece in self._emit(client, text, _MP3):
                 yield piece
+
+        if cl is not None:
+            async for chunk in _run_stream(cl):
+                yield chunk
+        else:
+            async with httpx.AsyncClient(timeout=60.0) as local_cl:
+                async for chunk in _run_stream(local_cl):
+                    yield chunk
+
+    async def stream_sentences(self, text_stream: AsyncIterator[str]) -> AsyncIterator[bytes]:
+        """Stream low-latency audio chunks by splitting text into sentences."""
+        import httpx
+        import re
+
+        sentence_end_re = re.compile(r'([.!?\n]+)\s*')
+        buffer = ""
+
+        async with httpx.AsyncClient(timeout=60.0) as cl:
+            async for fragment in text_stream:
+                buffer += fragment
+                while True:
+                    match = sentence_end_re.search(buffer)
+                    if not match:
+                        break
+                    idx = match.end()
+                    sentence = buffer[:idx].strip()
+                    buffer = buffer[idx:]
+                    if sentence:
+                        async for pcm in self.speak(sentence, cl=cl):
+                            yield pcm
+
+            if buffer.strip():
+                async for pcm in self.speak(buffer.strip(), cl=cl):
+                    yield pcm
 
     async def _emit(self, cl, text: str, fmt: str) -> AsyncIterator[bytes]:
         if fmt == _PCM:
@@ -159,23 +199,134 @@ class ElevenLabsTTS:
             return [(v.get("voice_id", ""), v.get("name", ""))
                     for v in (r.json().get("voices") or [])]
 
+    def verify_voice(self, voice_id: str = "") -> dict:
+        """Verify voice ID against ElevenLabs account and return structured status."""
+        vid = (voice_id or self.voice_id or DEFAULT_VOICE_ID).strip()
+        if not self.key:
+            return {
+                "ok": False,
+                "status": "UNAUTHENTICATED",
+                "voice_id": vid,
+                "message": "No API key configured. Enter your ElevenLabs API key in Settings.",
+                "details": "Authentication required",
+            }
+
+        import httpx
+        url = f"{API}/voices/{vid}"
+        try:
+            with httpx.Client(timeout=15.0) as cl:
+                r = cl.get(url, headers={"xi-api-key": self.key})
+                if r.status_code == 200:
+                    data = r.json()
+                    name = data.get("name", vid)
+                    category = data.get("category", "custom")
+                    settings = data.get("settings") or {}
+                    return {
+                        "ok": True,
+                        "status": "SUCCESS",
+                        "voice_id": vid,
+                        "voice_name": name,
+                        "category": category,
+                        "availability": "READY",
+                        "provider": "ELEVENLABS",
+                        "model": self.model,
+                        "settings": settings,
+                        "message": f"Verified: '{name}' ({category}) is ready for speech synthesis.",
+                    }
+                elif r.status_code == 401:
+                    return {
+                        "ok": False,
+                        "status": "UNAUTHORIZED",
+                        "voice_id": vid,
+                        "message": "API key refused (401 Unauthorized). Please check your key.",
+                        "details": _message(r.text),
+                    }
+                elif r.status_code == 403:
+                    return {
+                        "ok": False,
+                        "status": "FORBIDDEN",
+                        "voice_id": vid,
+                        "message": "Permission denied (403 Forbidden). Account cannot access this voice.",
+                        "details": _message(r.text),
+                    }
+                elif r.status_code == 404:
+                    return {
+                        "ok": False,
+                        "status": "NOT_FOUND",
+                        "voice_id": vid,
+                        "message": f"Voice ID '{vid}' was not found on this account (404 Not Found).",
+                        "details": _message(r.text),
+                    }
+                elif r.status_code == 429:
+                    return {
+                        "ok": False,
+                        "status": "RATE_LIMITED",
+                        "voice_id": vid,
+                        "message": "Rate limit exceeded or quota exhausted (429 Too Many Requests).",
+                        "details": _message(r.text),
+                    }
+                else:
+                    return {
+                        "ok": False,
+                        "status": f"HTTP_{r.status_code}",
+                        "voice_id": vid,
+                        "message": f"ElevenLabs API returned HTTP {r.status_code}: {_message(r.text)}",
+                        "details": r.text[:160],
+                    }
+        except httpx.TimeoutException:
+            return {
+                "ok": False,
+                "status": "TIMEOUT",
+                "voice_id": vid,
+                "message": "Connection to ElevenLabs API timed out (15s).",
+                "details": "Timeout",
+            }
+        except Exception as e:
+            return {
+                "ok": False,
+                "status": "NETWORK_ERROR",
+                "voice_id": vid,
+                "message": f"Network error contacting ElevenLabs: {e}",
+                "details": str(e),
+            }
+
     def probe(self) -> tuple[bool, str]:
         if not self.key:
-            return False, "No API key set."
-        try:
-            vs = self.voices()
-        except Exception as e:
-            msg = str(e)
-            if "401" in msg:
-                return False, "The key was refused."
-            return False, msg[:120]
-        if not self.voice_id:
-            names = ", ".join(n for _, n in vs[:4])
-            return False, f"Key works. Choose a voice — {len(vs)} available: {names}"
-        name = next((n for i, n in vs if i == self.voice_id), self.voice_id)
+            return False, "No ElevenLabs API key set."
+        res = self.verify_voice()
+        if not res["ok"]:
+            return False, res["message"]
+        name = res.get("voice_name", self.voice_id)
         note = "" if find_spec("av") else \
             "  (MP3 fallback would need PyAV — only matters on a free tier)"
-        return True, f"Ready: {name}, {self.model}{note}"
+        return True, f"Ready: {name} [{self.voice_id}], {self.model}{note}"
+
+    def play_preview(self, text: str = "Good evening, sir. JARVIS systems are online. How may I assist you?", on_status=None) -> None:
+        """Synthesize and play isolated audio preview using sounddevice without modifying conversation queues."""
+        import numpy as np
+        import sounddevice as sd
+
+        async def _gen():
+            chunks = []
+            async for pcm in self.speak(text):
+                chunks.append(pcm)
+            return b"".join(chunks)
+
+        if on_status:
+            on_status("Synthesizing preview...")
+        pcm_bytes = asyncio.run(_gen())
+        if not pcm_bytes:
+            if on_status:
+                on_status("No audio received.")
+            return
+
+        if on_status:
+            on_status("Playing preview...")
+        pcm_arr = np.frombuffer(pcm_bytes, dtype=np.int16)
+        sd.play(pcm_arr, samplerate=audio.SPEAKER_RATE)
+        sd.wait()
+        if on_status:
+            on_status("Preview finished.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -255,7 +406,8 @@ PROVIDER = {
         Field("api_key", "API key", kind="secret",
               hint="elevenlabs.io -> Profile -> API key"),
         Field("voice_id", "Voice", kind="choice", choices=(),
-              hint="Press LIST to read the voices on your account"),
+              default=DEFAULT_VOICE_ID,
+              hint="Custom voice ID (preconfigured: ibbx9zDYGvLgtYzRbqqG) or pick from account"),
         Field("model", "Model", kind="choice", choices=MODELS,
               default=DEFAULT_MODEL, required=False,
               hint="flash is the quickest and still multilingual"),

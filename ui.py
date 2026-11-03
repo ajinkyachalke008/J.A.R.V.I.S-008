@@ -1739,8 +1739,8 @@ class HueWheel(QWidget):
 class CustomizeOverlay(QWidget):
     """Floating overlay — change assistant name, user name, UI colour and voice."""
 
-    saved = pyqtSignal(str, str, str, str)   # assistant_name, user_name, ui_color, voice
-    _OW, _OH = 400, 588
+    saved = pyqtSignal(str, str, str, str, str)   # assistant_name, user_name, ui_color, voice, speech_mode
+    _OW, _OH = 400, 640
 
     def __init__(self, assistant_name="JARVIS", user_name="",
                  ui_color=DEFAULT_UI_COLOR, voice="", parent=None):
@@ -1791,29 +1791,82 @@ class CustomizeOverlay(QWidget):
         self._user_input.setStyleSheet(_fs)
         lay.addWidget(self._user_input)
 
-        # ── Assistant voice — Gemini prebuilt voices ─────────────────────────
-        # Names are language-neutral proper nouns, so the row reads the same in
-        # every locale. Selecting one and applying rebuilds the Live session.
-        from memory.config_manager import AVAILABLE_VOICES, DEFAULT_VOICE
+        # ── Speech Output Choice (Gemini Native vs ElevenLabs Custom) ─────────
+        from memory.config_manager import (AVAILABLE_VOICES, DEFAULT_VOICE,
+                                           get_speech_output_mode, get_elevenlabs_voice_id,
+                                           get_provider_config)
+        self._sel_speech_mode = get_speech_output_mode()
+        self._elevenlabs_vid  = get_elevenlabs_voice_id()
+
         lay.addSpacing(4)
-        lay.addWidget(_lbl("ASSISTANT VOICE", 8, color=C.TEXT_DIM,
-                            align=Qt.AlignmentFlag.AlignLeft))
+        mode_hdr = QHBoxLayout()
+        mode_hdr.addWidget(_lbl("SPEECH OUTPUT ENGINE", 8, color=C.TEXT_DIM, align=Qt.AlignmentFlag.AlignLeft))
+        mode_hdr.addStretch()
+        lay.addLayout(mode_hdr)
+
+        mode_row = QHBoxLayout(); mode_row.setSpacing(6)
+        self._btn_gemini_mode = QPushButton("● Gemini Native")
+        self._btn_gemini_mode.setCheckable(True)
+        self._btn_gemini_mode.setFixedHeight(26)
+        self._btn_gemini_mode.setFont(QFont("Courier New", 7, QFont.Weight.Bold))
+        self._btn_gemini_mode.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_gemini_mode.clicked.connect(lambda: self._set_speech_mode("gemini"))
+
+        self._btn_eleven_mode = QPushButton("○ ElevenLabs Custom")
+        self._btn_eleven_mode.setCheckable(True)
+        self._btn_eleven_mode.setFixedHeight(26)
+        self._btn_eleven_mode.setFont(QFont("Courier New", 7, QFont.Weight.Bold))
+        self._btn_eleven_mode.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_eleven_mode.clicked.connect(lambda: self._set_speech_mode("elevenlabs"))
+
+        mode_row.addWidget(self._btn_gemini_mode)
+        mode_row.addWidget(self._btn_eleven_mode)
+        lay.addLayout(mode_row)
+
+        # Custom voice banner
+        self._eleven_detail = QWidget()
+        eleven_lay = QHBoxLayout(self._eleven_detail)
+        eleven_lay.setContentsMargins(2, 2, 2, 2)
+        eleven_lay.setSpacing(6)
+        self._lbl_eleven_id = _lbl(f"Voice ID: {self._elevenlabs_vid}", 7, color=C.PRI_DIM)
+        btn_preview = QPushButton("🔊 TEST VOICE")
+        btn_preview.setFixedHeight(20)
+        btn_preview.setFont(QFont("Courier New", 7, QFont.Weight.Bold))
+        btn_preview.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_preview.setStyleSheet(f"""
+            QPushButton {{ background: #0A1E26; color: {C.PRI}; border: 1px solid {C.BORDER_B}; border-radius: 2px; padding: 2px 6px; }}
+            QPushButton:hover {{ background: {C.PRI_GHO}; color: #FFFFFF; border-color: {C.PRI}; }}
+        """)
+        btn_preview.clicked.connect(self._preview_custom_voice)
+
+        eleven_lay.addWidget(self._lbl_eleven_id)
+        eleven_lay.addStretch()
+        eleven_lay.addWidget(btn_preview)
+        lay.addWidget(self._eleven_detail)
+
+        # ── Gemini Prebuilt Voices ───────────────────────────────────────────
+        lay.addSpacing(2)
+        self._gemini_voice_lbl = _lbl("GEMINI PREBUILT VOICE", 8, color=C.TEXT_DIM,
+                                       align=Qt.AlignmentFlag.AlignLeft)
+        lay.addWidget(self._gemini_voice_lbl)
         self._sel_voice   = (voice or DEFAULT_VOICE)
         if self._sel_voice not in AVAILABLE_VOICES:
             self._sel_voice = DEFAULT_VOICE
         self._voice_btns: dict[str, QPushButton] = {}
-        voice_row = QHBoxLayout(); voice_row.setSpacing(4)
+        self._voice_row_w = QWidget()
+        voice_row = QHBoxLayout(self._voice_row_w); voice_row.setContentsMargins(0,0,0,0); voice_row.setSpacing(4)
         for _v in AVAILABLE_VOICES:
             b = QPushButton(_v)
             b.setCheckable(True)
-            b.setFixedHeight(28)
+            b.setFixedHeight(26)
             b.setFont(QFont("Courier New", 8, QFont.Weight.Bold))
             b.setCursor(Qt.CursorShape.PointingHandCursor)
             b.clicked.connect(lambda _=False, name=_v: self._on_voice_pick(name))
             self._voice_btns[_v] = b
             voice_row.addWidget(b)
-        lay.addLayout(voice_row)
+        lay.addWidget(self._voice_row_w)
         self._refresh_voice_btns()
+        self._refresh_mode_ui()
 
         # ── UI colour — colour wheel ─────────────────────────────────────────
         lay.addSpacing(4)
@@ -1887,7 +1940,40 @@ class CustomizeOverlay(QWidget):
         btn_row.addWidget(cancel_btn)
         lay.addLayout(btn_row)
 
-    # ── voice selection ──────────────────────────────────────────────────────
+    # ── speech mode & voice selection ─────────────────────────────────────────
+    def _set_speech_mode(self, mode: str):
+        self._sel_speech_mode = mode
+        self._refresh_mode_ui()
+
+    def _refresh_mode_ui(self):
+        is_eleven = (self._sel_speech_mode == "elevenlabs")
+        self._btn_eleven_mode.setChecked(is_eleven)
+        self._btn_gemini_mode.setChecked(not is_eleven)
+
+        active_style = f"QPushButton {{ background: {C.PRI_GHO}; color: {C.PRI}; border: 1px solid {C.PRI}; border-radius: 3px; }}"
+        inactive_style = f"QPushButton {{ background: transparent; color: {C.TEXT_MED}; border: 1px solid {C.BORDER}; border-radius: 3px; }} QPushButton:hover {{ color: {C.TEXT}; border-color: {C.BORDER_B}; }}"
+
+        self._btn_eleven_mode.setStyleSheet(active_style if is_eleven else inactive_style)
+        self._btn_gemini_mode.setStyleSheet(active_style if not is_eleven else inactive_style)
+
+        self._btn_eleven_mode.setText("● ElevenLabs Custom" if is_eleven else "○ ElevenLabs Custom")
+        self._btn_gemini_mode.setText("● Gemini Native" if not is_eleven else "○ Gemini Native")
+
+        self._eleven_detail.setVisible(is_eleven)
+        self._gemini_voice_lbl.setVisible(not is_eleven)
+        self._voice_row_w.setVisible(not is_eleven)
+
+    def _preview_custom_voice(self):
+        from memory.config_manager import get_provider_config
+        import threading
+        cfg = dict(get_provider_config("elevenlabs"))
+        try:
+            from providers.tts_elevenlabs import ElevenLabsTTS
+            tts = ElevenLabsTTS(cfg)
+            threading.Thread(target=tts.play_preview, daemon=True).start()
+        except Exception as e:
+            print(f"[Customize] Preview failed: {e}")
+
     def _on_voice_pick(self, name: str):
         self._sel_voice = name
         self._refresh_voice_btns()
@@ -1950,7 +2036,8 @@ class CustomizeOverlay(QWidget):
     def _save(self):
         name = self._name_input.text().strip() or "JARVIS"
         user = self._user_input.text().strip()
-        self.saved.emit(name, user, self._sel_color or DEFAULT_UI_COLOR, self._sel_voice)
+        mode = getattr(self, "_sel_speech_mode", "gemini")
+        self.saved.emit(name, user, self._sel_color or DEFAULT_UI_COLOR, self._sel_voice, mode)
         self.hide()
 
 
@@ -3396,6 +3483,9 @@ class ProvidersOverlay(_HudOverlay):
         # starting up, or a model has just been pulled.
         if any(k in shown for k in ("model", "voice_id", "voice")):
             brow.addWidget(self._btn("↻ REFRESH", lambda _=0, p=pid: self._list(p)))
+        if pid == "elevenlabs":
+            brow.addWidget(self._btn("VERIFY", lambda _=0, p=pid: self._verify_elevenlabs(p), C.ACC2))
+            brow.addWidget(self._btn("🔊 PREVIEW", lambda _=0, p=pid: self._preview_elevenlabs(p), C.PRI))
         if advanced:
             brow.addWidget(self._btn(
                 ("⌃ LESS" if self._more.get(pid) else "⌄ MORE"),
@@ -3615,6 +3705,48 @@ class ProvidersOverlay(_HudOverlay):
         if lb is not None:
             lb.setText(text)
             lb.setStyleSheet(f"color: {colour}; background: transparent; border: none;")
+
+    def _verify_elevenlabs(self, pid: str) -> None:
+        values = self._values(pid)
+        self._say(pid, "Verifying voice with ElevenLabs...", C.TEXT_DIM)
+        QApplication.processEvents()
+
+        def _run():
+            try:
+                from providers.tts_elevenlabs import ElevenLabsTTS
+                tts = ElevenLabsTTS(values)
+                res = tts.verify_voice()
+                def _done():
+                    if res.get("ok"):
+                        msg = (f"✔ VERIFIED: {res.get('voice_name')} [{res.get('voice_id')}] "
+                               f"({res.get('category')}) | Ready on {res.get('model')}")
+                        self._say(pid, msg, C.GREEN)
+                    else:
+                        msg = f"✖ {res.get('status')}: {res.get('message')}"
+                        self._say(pid, msg, C.RED)
+                QTimer.singleShot(0, _done)
+            except Exception as e:
+                QTimer.singleShot(0, lambda: self._say(pid, f"✖ Verification error: {e}", C.RED))
+
+        threading.Thread(target=_run, daemon=True).start()
+
+    def _preview_elevenlabs(self, pid: str) -> None:
+        values = self._values(pid)
+        self._say(pid, "Synthesizing test preview...", C.TEXT_DIM)
+        QApplication.processEvents()
+
+        def _run():
+            try:
+                from providers.tts_elevenlabs import ElevenLabsTTS
+                tts = ElevenLabsTTS(values)
+                def _status_cb(msg):
+                    QTimer.singleShot(0, lambda: self._say(pid, msg, C.TEXT_DIM))
+                tts.play_preview("Good evening, sir. JARVIS systems are online. How may I assist you?", on_status=_status_cb)
+                QTimer.singleShot(0, lambda: self._say(pid, "✔ Voice preview complete.", C.GREEN))
+            except Exception as e:
+                QTimer.singleShot(0, lambda: self._say(pid, f"✖ Preview failed: {e}", C.RED))
+
+        threading.Thread(target=_run, daemon=True).start()
 
     def _test(self, pid: str) -> None:
         # Read the boxes BEFORE letting Qt run. `processEvents` will happily
@@ -6930,7 +7062,7 @@ class MainWindow(QMainWindow):
             retheme_all_widgets(old, current_palette())
 
     def _apply_name_update(self, name: str, user_name: str, ui_color: str = "",
-                           voice: str = ""):
+                           voice: str = "", speech_mode: str = ""):
         """Update all name/theme-dependent UI elements and persist to config."""
         self._assistant_name = name.strip() or "J.A.R.V.I.S."
         display = self._assistant_name.upper()
@@ -6961,6 +7093,13 @@ class MainWindow(QMainWindow):
                 save_voice(voice)
                 voice_changed = True
 
+        speech_mode_changed = False
+        if speech_mode:
+            from memory.config_manager import get_speech_output_mode, save_speech_output_mode
+            if speech_mode != get_speech_output_mode():
+                save_speech_output_mode(speech_mode)
+                speech_mode_changed = True
+
         try:
             data = _read_full_config()
             data["assistant_name"] = self._assistant_name
@@ -6976,7 +7115,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self._log.append_log(f"ERR: Config save failed — {e}")
 
-        if voice_changed and self.on_voice_change:
+        if (voice_changed or speech_mode_changed) and self.on_voice_change:
             self.on_voice_change()
 
     def _centre_overlay(self, ov) -> None:

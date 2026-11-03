@@ -109,6 +109,36 @@ def save_voice(voice_name: str) -> None:
     data["voice_name"] = v if v in AVAILABLE_VOICES else DEFAULT_VOICE
     CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
 
+# ── Speech Output Mode & Custom ElevenLabs Voice ──────────────────────────────
+DEFAULT_SPEECH_OUTPUT_MODE = "gemini"   # "gemini" (prebuilt Live voices) or "elevenlabs" (custom ElevenLabs voice)
+DEFAULT_ELEVENLABS_VOICE_ID = "ibbx9zDYGvLgtYzRbqqG"
+
+
+def get_speech_output_mode() -> str:
+    """Return 'gemini' or 'elevenlabs'. Defaults to 'gemini'."""
+    mode = str(load_api_keys().get("speech_output_mode", DEFAULT_SPEECH_OUTPUT_MODE) or "").strip().lower()
+    return mode if mode in ("gemini", "elevenlabs") else DEFAULT_SPEECH_OUTPUT_MODE
+
+
+def save_speech_output_mode(mode: str) -> None:
+    """Persist the speech output engine choice without affecting prebuilt Gemini voices."""
+    m = (mode or "").strip().lower()
+    val = m if m in ("gemini", "elevenlabs") else DEFAULT_SPEECH_OUTPUT_MODE
+    _patch_config(speech_output_mode=val)
+
+
+def get_elevenlabs_voice_id() -> str:
+    """Return the configured ElevenLabs voice ID, defaulting to the custom voice ibbx9zDYGvLgtYzRbqqG."""
+    creds = get_provider_config("elevenlabs")
+    vid = str(creds.get("voice_id") or "").strip()
+    return vid or DEFAULT_ELEVENLABS_VOICE_ID
+
+
+def save_elevenlabs_voice_id(voice_id: str) -> None:
+    """Persist the chosen ElevenLabs voice ID in provider credentials."""
+    vid = (voice_id or DEFAULT_ELEVENLABS_VOICE_ID).strip()
+    save_provider_config("elevenlabs", {"voice_id": vid})
+
 
 def get_wake_word_enabled() -> bool:
     """Whether local wake-word gating is on (assistant sleeps until 'Hey Jarvis')."""

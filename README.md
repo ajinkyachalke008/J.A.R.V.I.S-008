@@ -244,6 +244,15 @@ J.A.R.V.I.S. — 008 untethers the assistant from proprietary cloud locks:
 - **3-Way State Synchronization:** Seamless bidirectional synchronization between Main HUD Controls Drawer, Windows System Tray menu, and the floating companion's `Hide` button.
 - **Multi-Monitor Edge Snapping:** Configurable placement across displays (Top Center, Top Left, Top Right, Bottom Center).
 
+
+### 12. Custom ElevenLabs Voice & Hybrid Speech Pipeline
+- **Preconfigured Voice ID:** Native support for the user's custom ElevenLabs voice (ibbx9zDYGvLgtYzRbqqG) configured independently of Gemini's prebuilt voice list.
+- **Dual Execution Architecture:**
+  - **Gemini Live Hybrid Mode:** Leverages Gemini 3.1 Flash Live for real-time vision, mic capture, and tool execution, while synthesizing speech output via ElevenLabs and suppressing native audio.
+  - **Provider-Pipeline Mode:** Full modular pipeline with STT, local/cloud LLMs, and ElevenLabs low-latency TTS.
+- **Real-Time Streaming & Audio Playback:** Sentence-by-sentence streaming output directly to the 24 kHz mono signed 16-bit PCM hardware speaker queue with MP3 fallback decoding.
+- **Live Voice Verification & Audition:** Built-in verification against GET /v1/voices/{voice_id} and interactive voice preview test in both Customize and Providers overlays.
+- **Full Interruption & State Synchronization:** Instant task cancellation on user barge-in with continuous viseme, Dynamic Island, and 3D Avatar synchronization.
 ---
 
 ## ⚙️ Architecture & Engine Providers
@@ -402,7 +411,8 @@ Mark-LVI/
 │   ├── github_manager.py     # GitHub workflow automation and repository inspection
 │   ├── file_dispatcher.py    # Autonomous filesystem management
 │   └── desktop_downloader.py # Automated file retrieval utilities
-├── tests/                    # Comprehensive Pytest test suite (151 tests)
+├── tests/                    # Comprehensive Pytest test suite (167+ tests)
+│   ├── test_elevenlabs_voice.py  # ElevenLabs custom voice verification & streaming tests
 │   ├── test_dynamic_island_v2.py
 │   ├── test_dynamic_island_refinement.py
 │   ├── test_dynamic_island_e2e.py
@@ -425,6 +435,7 @@ Mark-LVI/
 │   └── github_manager_gui.py # Standalone GitHub repository & cloner tool
 ├── antigravity_ide_api.py    # Core Antigravity IDE programmatic automation API
 ├── dashboard/                # Web & mobile remote companion interface
+├── ELEVENLABS_VOICE_INTEGRATION_REPORT.md # ElevenLabs Voice Integration Report
 ├── IMPLEMENTATION_REPORT.md  # Formal Master Implementation Report
 ├── launch.bat                # Windows fast console launcher
 ├── run.vbs                   # Silent Windows tray background launcher

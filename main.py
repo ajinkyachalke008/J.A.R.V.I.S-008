@@ -689,6 +689,9 @@ class JarvisLive:
         self._proactive        = ProactiveEngine()
         self._last_user_speech = time.monotonic()  # updated on every user utterance
         self._session_log: list[str] = []          # conversation turns for end-of-session summary
+        self._elevenlabs_tts = None
+        self._elevenlabs_tasks: list = []
+        self._elevenlabs_buf: str = ""
 
         self._enhanced_live = True  # proactive audio; auto-disabled if the server rejects it
         self._tuned_live    = True  # turn-taking / media / thinking knobs; same fallback
@@ -915,6 +918,64 @@ class JarvisLive:
         if loop and ev is not None:
             loop.call_soon_threadsafe(ev.set)
 
+    def _init_elevenlabs_if_enabled(self):
+        """Prepare ElevenLabs TTS instance if ElevenLabs is selected as the speech output engine."""
+        from memory.config_manager import get_speech_output_mode, get_provider_config
+        if get_speech_output_mode() == "elevenlabs":
+            try:
+                from providers.tts_elevenlabs import ElevenLabsTTS
+                cfg = dict(get_provider_config("elevenlabs"))
+                self._elevenlabs_tts = ElevenLabsTTS(cfg)
+                if not self._elevenlabs_tts.key:
+                    print("[JARVIS] ⚠️ ElevenLabs key unset. Output will use Gemini Native Voice.")
+                else:
+                    print(f"[JARVIS] 🎙️ ElevenLabs speech output active (voice: {self._elevenlabs_tts.voice_id})")
+            except Exception as e:
+                print(f"[JARVIS] ⚠️ ElevenLabs init failed: {e}")
+                self._elevenlabs_tts = None
+        else:
+            self._elevenlabs_tts = None
+
+    def _feed_elevenlabs_text(self, text: str) -> None:
+        """Buffer incoming transcript text and synthesize at sentence boundaries."""
+        self._elevenlabs_buf += text
+        m = re.search(r'([.!?\n]+)\s*', self._elevenlabs_buf)
+        if m:
+            idx = m.end()
+            sentence = self._elevenlabs_buf[:idx].strip()
+            self._elevenlabs_buf = self._elevenlabs_buf[idx:]
+            if sentence:
+                self._dispatch_elevenlabs_sentence(sentence)
+
+    def _flush_elevenlabs_text(self) -> None:
+        """Flush trailing transcript text on turn complete."""
+        if self._elevenlabs_buf.strip():
+            sentence = self._elevenlabs_buf.strip()
+            self._elevenlabs_buf = ""
+            self._dispatch_elevenlabs_sentence(sentence)
+
+    def _dispatch_elevenlabs_sentence(self, sentence: str) -> None:
+        """Dispatch sentence synthesis task to ElevenLabs streaming PCM to audio_in_queue."""
+        if not self._elevenlabs_tts or not sentence:
+            return
+        async def _synth(s: str):
+            try:
+                _SLICE = 2400
+                async for piece in self._elevenlabs_tts.speak(s):
+                    if self._interrupted:
+                        break
+                    if self._turn_done_event and self._turn_done_event.is_set():
+                        self._turn_done_event.clear()
+                    for i in range(0, len(piece), _SLICE):
+                        if self._interrupted:
+                            break
+                        self.audio_in_queue.put_nowait(piece[i:i+_SLICE])
+            except Exception as e:
+                print(f"[JARVIS] ⚠️ ElevenLabs synthesis error: {e}")
+                self.ui.write_log(f"SYS: ElevenLabs voice synthesis error: {e}")
+        t = asyncio.create_task(_synth(sentence))
+        self._elevenlabs_tasks.append(t)
+
     def _on_voice_change(self):
         """Voice picker applied.
 
@@ -1118,6 +1179,12 @@ class JarvisLive:
         # The words we were about to mouth are never going to be spoken now.
         self._visemes.reset()
         self._play_cursor = 0.0     # next batch starts a fresh timeline
+        for t in getattr(self, "_elevenlabs_tasks", []):
+            if not t.done():
+                t.cancel()
+        if hasattr(self, "_elevenlabs_tasks"):
+            self._elevenlabs_tasks.clear()
+        self._elevenlabs_buf = ""
         if self._turn_done_event:
             self._turn_done_event.clear()
         # Draining the queue stops the speakers, but a local engine is still
@@ -1719,9 +1786,19 @@ class JarvisLive:
                                 print("[JARVIS] 🔗 Session resumption armed")
                             self._resume_handle = _sru.new_handle
 
+                    from memory.config_manager import get_speech_output_mode
+                    use_elevenlabs = bool(
+                        self._elevenlabs_tts
+                        and self._elevenlabs_tts.key
+                        and get_speech_output_mode() == "elevenlabs"
+                    )
+
                     if response.data:
                         if self._interrupted:
                             pass  # discard: interrupted
+                        elif use_elevenlabs:
+                            # Suppress Gemini native audio while ElevenLabs custom voice synthesizes
+                            pass
                         else:
                             if self._turn_done_event and self._turn_done_event.is_set():
                                 self._turn_done_event.clear()
@@ -1751,6 +1828,8 @@ class JarvisLive:
                                 # alone cannot show. Pure string work — it adds
                                 # nothing measurable to the response path.
                                 self._visemes.feed_text(txt)
+                                if use_elevenlabs:
+                                    self._feed_elevenlabs_text(txt)
 
                         if sc.input_transcription and sc.input_transcription.text:
                             txt = _clean_transcript(sc.input_transcription.text)
@@ -1759,6 +1838,8 @@ class JarvisLive:
                                 self._last_user_speech = time.monotonic()
 
                         if sc.turn_complete:
+                            if use_elevenlabs:
+                                self._flush_elevenlabs_text()
                             if self._turn_done_event:
                                 self._turn_done_event.set()
 
@@ -2458,6 +2539,7 @@ class JarvisLive:
                 # install this returns None in a few microseconds and nothing
                 # below behaves any differently.
                 self._engine_caps = self._resolve_engine_caps()
+                self._init_elevenlabs_if_enabled()
                 config = self._build_config()
 
                 # The conversation itself. `_open_session` gives back a Gemini
