@@ -135,6 +135,29 @@ class ScreenCaptureService:
             logger.error("Regional capture failed: %s", e)
             raise RuntimeError(f"Regional capture failed: {e}")
 
+    def capture_active_window(
+        self,
+        compress: bool = True,
+        max_size: Optional[Tuple[int, int]] = (_IMG_MAX_W, _IMG_MAX_H),
+    ) -> Tuple[Image.Image, int, int]:
+        """Capture active foreground window with (offset_x, offset_y) coordinates."""
+        self._verify_permission()
+        offset_x, offset_y = 0, 0
+        try:
+            import win32gui
+            hwnd = win32gui.GetForegroundWindow()
+            if hwnd:
+                l, t, r, b = win32gui.GetWindowRect(hwnd)
+                w, h = r - l, b - t
+                if w > 50 and h > 50:
+                    img, _, _ = self.capture_region(l, t, w, h, compress=compress, max_size=max_size)
+                    return img, l, t
+        except Exception:
+            pass
+
+        img, _, _ = self.capture_full_desktop(compress=compress, max_size=max_size)
+        return img, offset_x, offset_y
+
     def _verify_permission(self) -> None:
         _ensure_desktop_attached()
         if not self._access_mgr.check_permission(PermissionScope.SCREEN_CAPTURE):
@@ -171,3 +194,7 @@ def get_screen_capture() -> ScreenCaptureService:
     if _capture_service_instance is None:
         _capture_service_instance = ScreenCaptureService()
     return _capture_service_instance
+
+
+# Backward-compatible alias
+ScreenCaptureEngine = ScreenCaptureService

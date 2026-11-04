@@ -1,0 +1,134 @@
+{
+  "ai_research_and_prototype": {
+    "skill_id": "ai_research_and_prototype",
+    "name": "AI Research and Prototype",
+    "description": "Researches technical topics on arXiv, prepares workspace, implements code, and verifies with pytest.",
+    "trigger_phrases": [
+      "run ai research and prototype",
+      "research and build a prototype",
+      "research and prototype"
+    ],
+    "parameters": {
+      "topic": {
+        "type": "string",
+        "default": "Autonomous AI Agents",
+        "required": true
+      },
+      "research_source": {
+        "type": "string",
+        "default": "arxiv",
+        "required": false
+      },
+      "language": {
+        "type": "string",
+        "default": "python",
+        "required": false
+      },
+      "test_framework": {
+        "type": "string",
+        "default": "pytest",
+        "required": false
+      }
+    },
+    "steps": [
+      {
+        "id": "research",
+        "action": "arxiv_search",
+        "inputs": {
+          "topic": "{{topic}}"
+        }
+      },
+      {
+        "id": "open_editor",
+        "action": "open_app",
+        "inputs": {
+          "app_name": "code"
+        }
+      },
+      {
+        "id": "generate_prototype",
+        "action": "create_files",
+        "inputs": {
+          "topic": "{{topic}}"
+        }
+      },
+      {
+        "id": "run_tests",
+        "action": "run_pytest",
+        "inputs": {
+          "framework": "pytest"
+        }
+      }
+    ],
+    "category": "mission_recipe",
+    "status": "ACTIVE",
+    "execution_count": 0,
+    "success_count": 0,
+    "failure_count": 0,
+    "created_at": 1793791327.0995433,
+    "last_executed_at": 0.0
+  },
+  "ai_agent_builder": {
+    "skill_id": "ai_agent_builder",
+    "name": "AI Agent Builder",
+    "description": "Autonomous workflow skill generated from mission for: Deep Learning Agents",
+    "trigger_phrases": [
+      "run ai agent builder",
+      "execute ai agent builder"
+    ],
+    "parameters": {
+      "topic": {
+        "type": "string",
+        "default": "Deep Learning Agents",
+        "required": true
+      },
+      "research_source": {
+        "type": "string",
+        "default": "arxiv",
+        "required": false
+      },
+      "test_framework": {
+        "type": "string",
+        "default": "pytest",
+        "required": false
+      }
+    },
+    "steps": [
+      {
+        "id": "research",
+        "action": "arxiv_search",
+        "inputs": {
+          "topic": "{{topic}}"
+        }
+      },
+      {
+        "id": "open_editor",
+        "action": "open_app",
+        "inputs": {
+          "app_name": "code"
+        }
+      },
+      {
+        "id": "generate_prototype",
+        "action": "create_files",
+        "inputs": {
+          "topic": "{{topic}}"
+        }
+      },
+      {
+        "id": "run_tests",
+        "action": "run_pytest",
+        "inputs": {
+          "framework": "{{test_framework}}"
+        }
+      }
+    ],
+    "category": "mission_recipe",
+    "status": "ACTIVE",
+    "execution_count": 0,
+    "success_count": 0,
+    "failure_count": 0,
+    "created_at": 1793791516.875182,
+    "last_executed_at": 0.0
+  }
+}

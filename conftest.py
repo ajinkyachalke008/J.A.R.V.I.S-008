@@ -27,3 +27,30 @@ def qapp():
     if app is None:
         app = QApplication([sys.argv[0] if sys.argv else "jarvis", "--no-sandbox"])
     return app
+
+
+@pytest.fixture(autouse=True)
+def isolate_desktop_access_and_watchdog(monkeypatch):
+    """Prevents developer's physical mouse corner position from tripping watchdog during automated test runs."""
+    try:
+        from core.desktop.access_manager import get_access_manager
+        from core.desktop.emergency_stop import get_emergency_stop
+
+        es = get_emergency_stop()
+        es.stop_watchdog()
+        mgr = get_access_manager()
+        mgr.revoke("conftest_reset")
+
+        monkeypatch.setattr(es, "start_watchdog", lambda: None)
+        try:
+            import pyautogui
+            monkeypatch.setattr(pyautogui, "position", lambda: (960, 540))
+        except Exception:
+            pass
+
+        yield
+
+        es.stop_watchdog()
+        mgr.revoke("conftest_teardown")
+    except Exception:
+        yield
