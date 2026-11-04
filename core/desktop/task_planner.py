@@ -39,14 +39,19 @@ class DesktopTaskPlanner:
 
     def execute_atomic_action(self, action: str, params: dict[str, Any]) -> str:
         """Executes a single verified atomic desktop action."""
+        act = action.lower().strip()
+
+        # Stop scroll is a failsafe allowed anytime
+        if act in ("stop_scroll", "stop"):
+            from .universal_scroll import get_universal_scroll
+            return get_universal_scroll().stop_continuous_scroll()
+
         if not self._access_mgr.is_control_enabled:
             return outcome.failed(
                 action,
                 "Desktop access is disabled. User must enable Full Desktop Access first.",
                 required_state="control_enabled",
             )
-
-        act = action.lower().strip()
 
         if act == "click_element":
             target = params.get("target") or params.get("name") or ""
@@ -122,6 +127,37 @@ class DesktopTaskPlanner:
                 expected_focus_change=True,
             )
 
+        elif act == "scroll":
+            from .universal_scroll import get_universal_scroll
+            cmd = str(params.get("command") or params.get("direction") or "down")
+            amt = params.get("amount")
+            container = str(params.get("container") or "main")
+            return get_universal_scroll().scroll(command_or_direction=cmd, amount=amt, container=container, verify=True)
+
+        elif act == "scroll_again":
+            from .interaction_context import get_interaction_context
+            from .universal_scroll import get_universal_scroll
+            ctx = get_interaction_context().get_or_create_session()
+            direction = ctx.last_direction or "down"
+            container = ctx.container_type or "main"
+            return get_universal_scroll().scroll(command_or_direction=direction, amount=ctx.last_magnitude, container=container, verify=True)
+
+        elif act in ("find_and_click", "click_target"):
+            from .visual_target_detector import get_visual_target_detector
+            query = str(params.get("target") or params.get("query") or params.get("name") or "").strip()
+            if not query:
+                return outcome.failed(act, "target parameter is required")
+            category = params.get("category")
+            max_scroll = int(params.get("max_scroll_attempts", 4))
+            target, attempts = get_visual_target_detector().scroll_until_visible(query, max_scroll_attempts=max_scroll, category=category)
+            if not target:
+                return outcome.failed(act, f"Target '{query}' not found after {attempts} scans")
+
+            cx, cy = target.center
+            self._cursor.move_to(cx, cy, duration=0.25, human_like=True)
+            self._cursor.click(cx, cy, hover_delay=0.08)
+            return outcome.done(act, target=target.label[:50], coords=[cx, cy], confidence=target.confidence)
+
         return outcome.failed(action, f"Unknown action: {action}")
 
     def run_multi_step_task(
@@ -162,8 +198,10 @@ class DesktopTaskPlanner:
 
         return outcome.done(
             "run_multi_step_task",
-            task=task_description[:60],
+            task=task_description[:50],
             steps_completed=executed_count,
+            completed_steps=executed_count,
+            total_steps=len(steps),
         )
 
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 import math
 import random
+import threading
 import time
 from typing import Optional, Tuple
 
@@ -57,10 +58,7 @@ class CursorController:
             pyautogui.moveTo(target_x, target_y, duration=duration)
             return True
 
-        # Cubic Bézier curve generation:
-        # P0 = (start_x, start_y)
-        # P3 = (target_x, target_y)
-        # P1, P2 = randomized control points perturbed perpendicularly
+        # Cubic Bézier curve generation
         dx = target_x - start_x
         dy = target_y - start_y
         normal_x, normal_y = -dy, dx
@@ -82,7 +80,6 @@ class CursorController:
             # Ease-in-out smoothing: t^2 * (3 - 2t)
             t_smooth = t * t * (3.0 - 2.0 * t)
 
-            # Cubic Bézier formula
             bx = ((1 - t_smooth) ** 3) * start_x + \
                  3 * ((1 - t_smooth) ** 2) * t_smooth * p1_x + \
                  3 * (1 - t_smooth) * (t_smooth ** 2) * p2_x + \
@@ -155,12 +152,14 @@ class CursorController:
         pyautogui.mouseUp(button=button)
         return True
 
-    def scroll(self, amount: int, direction: str = "down") -> bool:
-        """Scroll mouse wheel."""
+    def scroll(self, amount: int = 5, direction: str = "down") -> bool:
+        """Scroll mouse wheel with calibrated WHEEL_DELTA scaling."""
         if not self._access_mgr.check_permission(PermissionScope.MOUSE_MOVE):
             return False
 
-        clicks = -abs(amount) if direction.lower() == "down" else abs(amount)
+        # Scale small integer click counts (< 20) by standard WHEEL_DELTA (120) for Windows
+        delta = amount * 120 if abs(amount) < 20 else abs(amount)
+        clicks = -delta if direction.lower() == "down" else delta
         pyautogui.scroll(clicks)
         return True
 
@@ -181,7 +180,6 @@ class CursorController:
             pyautogui.press("backspace")
             time.sleep(0.04)
 
-        # Detect whether Unicode or multi-line requires clipboard paste
         needs_clipboard = use_clipboard or any(ord(c) > 127 or c in "\n\t" for c in text) or len(text) > 40
         if needs_clipboard and _PYPERCLIP:
             old_clip = pyperclip.paste()
@@ -191,7 +189,6 @@ class CursorController:
                 pyautogui.hotkey("ctrl", "v")
                 time.sleep(0.06)
             finally:
-                # Restore previous clipboard content after short delay
                 threading.Timer(0.3, lambda: pyperclip.copy(old_clip)).start()
         else:
             for char in text:

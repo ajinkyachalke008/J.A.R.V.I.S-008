@@ -14,10 +14,12 @@ def test_emergency_halt_sequence():
     halt_reasons = []
     es.register_callback(lambda r: halt_reasons.append(r))
 
-    es.trigger_halt("test_emergency_halt")
+    try:
+        es.trigger_halt("test_emergency_halt")
 
-    assert mgr.state == DesktopAccessState.ERROR
-    assert not mgr.is_control_enabled
-    assert len(halt_reasons) == 1
-    assert halt_reasons[0] == "test_emergency_halt"
-
+        assert mgr.state == DesktopAccessState.ERROR
+        assert not mgr.is_control_enabled
+        assert len(halt_reasons) == 1
+        assert halt_reasons[0] == "test_emergency_halt"
+    finally:
+        mgr.revoke("test_cleanup")

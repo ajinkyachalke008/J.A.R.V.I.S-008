@@ -1,3 +1,8 @@
+def _handle_visual_play(parameters: dict, player=None, speak=None) -> str:
+    from actions.universal_interaction import universal_interaction
+    query = parameters.get("query") or parameters.get("target") or ""
+    return universal_interaction({"action": "find_and_click", "target": query, "category": "video_card"}, player=player)
+
 #youtube_video.py
 import json
 import re
@@ -408,6 +413,8 @@ _ACTION_MAP = {
     "summarize": _handle_summarize,
     "get_info":  _handle_get_info,
     "trending":  _handle_trending,
+    "find_and_play": _handle_visual_play,
+    "visual_play": _handle_visual_play,
 }
 
 

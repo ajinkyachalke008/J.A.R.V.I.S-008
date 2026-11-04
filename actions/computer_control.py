@@ -231,7 +231,8 @@ def _press(key: str) -> str:
 def _scroll(direction: str = "down", amount: int = 3) -> str:
     _require_pyautogui()
     vertical   = direction in ("up", "down")
-    clicks     = amount if direction in ("up", "right") else -amount
+    delta      = amount * 120 if abs(amount) < 20 else abs(amount)
+    clicks     = delta if direction in ('up', 'right') else -delta
     pyautogui.scroll(clicks) if vertical else pyautogui.hscroll(clicks)
     return f"Scrolled {direction} ×{amount}"
 

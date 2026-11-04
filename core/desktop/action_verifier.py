@@ -93,12 +93,37 @@ class ActionVerifier:
                 visual_diff=f"{pixel_diff_pct:.1f}%",
             )
 
+        # Detect boundary on scrolling when zero pixel movement occurs
+        if action_name.startswith("scroll") and pixel_diff_pct == 0.0:
+            return outcome.unverified(
+                action_name,
+                "Boundary reached or content static (0.0% visual delta)",
+                target=target_desc,
+                boundary="possible_edge",
+            )
+
         # Request accepted but no change detected
         return outcome.unverified(
             action_name,
             "No visible screen change or focus change detected",
             target=target_desc,
         )
+
+    def verify_playback(self, expected_title_keyword: str = "", settle_delay: float = 0.50) -> str:
+        """Verifies if YouTube or media playback has initiated following a click."""
+        time.sleep(settle_delay)
+        snap = self.get_window_snapshot()
+        current_title = snap.get("title", "")
+        kw = expected_title_keyword.lower().strip()
+
+        # Check title update
+        if kw and kw in current_title.lower():
+            return outcome.done("verify_playback", status="playing", title=current_title)
+
+        if "youtube" in current_title.lower() and ("watch" in current_title.lower() or "-" in current_title):
+            return outcome.done("verify_playback", status="playing", title=current_title)
+
+        return outcome.done("verify_playback", status="navigated", title=current_title)
 
 
 _verifier_instance: Optional[ActionVerifier] = None

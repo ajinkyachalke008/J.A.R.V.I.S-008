@@ -37,6 +37,11 @@ def desktop_agent(
             player.show_content("ACTIVE UI CONTROLS", summary)
         return outcome.done("inspect_controls", count=len(summary.splitlines()) - 1)
 
+    # Stop scroll is an immediate failsafe that does not require full control
+    if action in ("stop_scroll", "stop"):
+        planner = get_task_planner()
+        return planner.execute_atomic_action(action, parameters)
+
     # 2. Execution actions require control permission
     if not access_mgr.is_control_enabled:
         return outcome.failed(
@@ -48,7 +53,12 @@ def desktop_agent(
     planner = get_task_planner()
 
     # 3. Composite or atomic execution
-    if action in ("click_element", "click_coord", "click", "double_click", "right_click", "type", "type_text", "hotkey", "wait", "focus_window"):
+    atomic_actions = (
+        "click_element", "click_coord", "click", "double_click", "right_click",
+        "type", "type_text", "hotkey", "wait", "focus_window",
+        "scroll", "scroll_again", "find_and_click",
+    )
+    if action in atomic_actions:
         return planner.execute_atomic_action(action, parameters)
 
     if task:
@@ -65,7 +75,7 @@ TOOL = {
     "name": "desktop_agent",
     "description": (
         "Autonomous desktop agent that plans and executes multi-step desktop tasks such as "
-        "clicking buttons, filling forms, finding UI controls, typing text, and navigating Windows applications."
+        "clicking buttons, filling forms, finding UI controls, typing text, scrolling, and navigating Windows applications."
     ),
     "parameters": {
         "type": "OBJECT",
@@ -74,7 +84,8 @@ TOOL = {
                 "type": "STRING",
                 "description": (
                     "status | inspect_controls | click_element | click_coord | "
-                    "double_click | right_click | type_text | hotkey | wait | focus_window"
+                    "double_click | right_click | type_text | hotkey | wait | focus_window | "
+                    "scroll | scroll_again | stop_scroll | find_and_click"
                 ),
             },
             "task": {
@@ -83,7 +94,7 @@ TOOL = {
             },
             "target": {
                 "type": "STRING",
-                "description": "Name or accessible label of the button or UI element to click.",
+                "description": "Name or accessible label of the button, UI element, or video to click.",
             },
             "text": {
                 "type": "STRING",
@@ -100,6 +111,14 @@ TOOL = {
             "y": {
                 "type": "INTEGER",
                 "description": "Vertical pixel coordinate for click.",
+            },
+            "direction": {
+                "type": "STRING",
+                "description": "Scroll direction: down | up | left | right | to_top | to_bottom | page_down | page_up.",
+            },
+            "amount": {
+                "type": "STRING",
+                "description": "Scroll magnitude: subtle | normal | more | page | extreme.",
             },
             "keys": {
                 "type": "STRING",
