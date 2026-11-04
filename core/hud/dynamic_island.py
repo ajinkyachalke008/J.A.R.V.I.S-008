@@ -693,6 +693,24 @@ class DynamicIsland(QWidget):
     def _on_core_activity_changed(self, pct: float) -> None:
         self._core_gauge.set_percentage(pct)
 
+    def set_mission_status(
+        self,
+        mission_title: str,
+        step_desc: str = '',
+        progress_pct: Optional[float] = None,
+    ) -> None:
+        """Update Dynamic Island display with active autonomous mission progress."""
+        if not mission_title:
+            self._lbl_act_desc.setText('⚙️  ' + str(self._model.get_activity_description()))
+            return
+        text = '🎯 ' + mission_title
+        if step_desc:
+            text += ' | ' + step_desc
+        self._lbl_act_desc.setText(text)
+        if progress_pct is not None:
+            self._core_gauge.set_percentage(progress_pct)
+        self.update()
+
     # ── Positioning, DPI Scaling, and Animation Ticks ─────────────────────────
 
     def get_dpi_scale(self) -> float:

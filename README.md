@@ -25,6 +25,7 @@
 <p align="center">
   <a href="#-system-status--live-telemetry"><b>Live Status</b></a> •
   <a href="#-interface--capabilities-showcase"><b>Interface Tour</b></a> •
+  <a href="#-intelligence-platform-10"><b>Intelligence Platform</b></a> •
   <a href="#-key-capabilities"><b>Capabilities</b></a> •
   <a href="#-whats-new-in-008"><b>What's New</b></a> •
   <a href="#-quick-start"><b>Quick Start</b></a> •
@@ -50,7 +51,7 @@
 ## 📸 Interface & Capabilities Showcase
 
 <div align="center">
-  <img src="assets/jarvis-banner.png" width="100%" alt="J.A.R.V.I.S. — 008 Hero Banner" />
+  <img src="assets/jarvis-banner-enhanced.png" width="100%" alt="J.A.R.V.I.S. — 008 Hero Banner" />
 </div>
 
 <br />
@@ -73,16 +74,50 @@
   <tr>
     <td width="50%" align="center">
       <b>🧑‍🎤 3D Holographic Avatar &amp; Live HUD</b><br />
-      <img src="assets/jarvis-hud-avatar.png" width="100%" alt="Holographic Avatar HUD" /><br />
+      <img src="assets/jarvis-hud-avatar-enhanced.png" width="100%" alt="Holographic Avatar HUD" /><br />
       <i>Software-rendered 3D facial rig with orbital particle rings, dynamic visemes, live system diagnostics (CPU/RAM/Temp/Network), 008 Quantum Core status, ElevenLabs voice link, and conversational live feed.</i>
     </td>
     <td width="50%" align="center">
       <b>🖥️ Autonomous Computer Control &amp; Vision</b><br />
-      <img src="assets/jarvis-autonomous-control.png" width="100%" alt="Autonomous Computer Control" /><br />
+      <img src="assets/jarvis-autonomous-control-enhanced.png" width="100%" alt="Autonomous Computer Control" /><br />
       <i>Multi-window visual grounding with OCR bounding boxes (Chrome, VS Code, Antigravity IDE), command execution stream, real-time tool telemetry (&lt; 2.1ms), vision radar sweep, and live keyboard/mouse event pipeline.</i>
     </td>
   </tr>
 </table>
+
+---
+
+## 🧠 Intelligence Platform 1.0
+
+<div align="center">
+  <img src="assets/jarvis-hud-avatar-enhanced.png" width="100%" alt="J.A.R.V.I.S. Intelligence Platform 1.0 Console & Holographic Core" />
+</div>
+
+<br />
+
+The **J.A.R.V.I.S. MARK LVI Intelligence Platform 1.0** integrates seven core intelligence systems directly into the desktop runtime, turning J.A.R.V.I.S. into an autonomous, context-aware personal AI operating system.
+
+| Priority | Intelligence System | Core Technical Responsibility | Primary Engine / Path |
+|:---:|:---|:---|:---|
+| **1** | **Mission Control** | DAG task decomposition, autonomous state machine (`DRAFT` ➔ `COMPLETED`), pause/resume, synthesized reports | `core/intelligence/mission_control/` |
+| **2** | **Neural Memory 2.0** | Continuous project continuity across 4 tiers, automatic credential scrubbing (`[REDACTED]`), relevance ranking | `core/intelligence/memory/` |
+| **3** | **Context Awareness** | Active application/window tracking, strict permission gating via `DesktopAccessManager`, untrusted boundary guard | `core/intelligence/context/` |
+| **4** | **Skill Builder** | Declarative workflow synthesis, parameter schema validation, interactive dry-run simulation sandbox | `core/intelligence/skills/` |
+| **5** | **Research Intelligence** | Multi-source evidence gathering, claim extraction, contradiction detection, citation-rich Markdown generator | `core/intelligence/research/` |
+| **6** | **Engineering Intelligence** | Precision circuit formulas (Voltage divider, LM2596 buck, RC cutoff), mechanical bolt circle pattern, BOM compiler | `core/intelligence/engineering/` |
+| **7** | **Reliability & Audit** | Subsystem health diagnostics, latency benchmarks, circuit breaker state detection, bounded audit trail logger | `core/intelligence/reliability/` |
+
+### 🖥️ Native PyQt6 Intelligence Command Console
+
+Launch the dedicated Stark HUD dashboard directly from the main window using the `🧠 INTELLIGENCE PLATFORM` drawer button or via `get_intelligence_window()`:
+
+- **Mission Control View:** Decompile complex instructions into ordered DAG steps, monitor live percentage completion, inspect output evidence, or pause/cancel runs in real time.
+- **Neural Memory Explorer:** Filter memories by category (`PROJECT`, `PREFERENCE`, `EPISODIC`, `RULE`), execute instant multi-word searches, inspect metadata, and selectively forget records.
+- **Context Inspector:** Observe foreground window hierarchy, PID, and bounding boxes with explicit indicators that external text is treated as untrusted data.
+- **Skill Library:** Inspect installed declarative skills and dry-run execution flows safely without affecting external system state.
+- **Research Studio:** Input topics, extract empirical claims with confidence scores, detect source contradictions, and generate formal Markdown investigation reports.
+- **Engineering Studio:** Interactive calculators for electrical voltage dividers, buck regulators, RC filters, and mechanical bolt circles with instant Bill of Materials (BOM) export.
+- **Reliability Centre:** Real-time health diagnostic matrix, microsecond latency monitors, and tamper-resistant audit trail logs.
 
 ---
 

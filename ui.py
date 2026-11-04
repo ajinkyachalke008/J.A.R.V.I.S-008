@@ -5962,6 +5962,9 @@ class MainWindow(QMainWindow):
         self._studio_btn = _row(QPushButton("📐  CREATION STUDIO"), self._BTN_PRI)
         self._studio_btn.clicked.connect(self._open_creation_studio)
 
+        self._intel_btn = _row(QPushButton("🧠  INTELLIGENCE PLATFORM"), self._BTN_PRI)
+        self._intel_btn.clicked.connect(self._open_intelligence_platform)
+
         self._emergency_halt_btn = _row(QPushButton("🚨  EMERGENCY STOP [ESC]"), self._BTN_DIM)
         self._emergency_halt_btn.clicked.connect(self._trigger_emergency_stop)
 
@@ -7327,6 +7330,17 @@ class MainWindow(QMainWindow):
             self.write_log("SYS: Universal Creation Studio opened.")
         except Exception as e:
             self.write_log(f"SYS: Could not open Creation Studio: {e}")
+
+    def _open_intelligence_platform(self):
+        try:
+            from core.intelligence.ui.intelligence_window import get_intelligence_window
+            win = get_intelligence_window(base_dir=BASE_DIR)
+            win.show()
+            win.raise_()
+            win.activateWindow()
+            self.write_log("SYS: Intelligence Platform 1.0 console opened.")
+        except Exception as e:
+            self.write_log(f"SYS: Could not open Intelligence Platform: {e}")
 
     # ── Clipboard intelligence ───────────────────────────────────────────────────
 
