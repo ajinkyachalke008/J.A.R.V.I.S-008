@@ -1,6 +1,6 @@
 # 🎙️ J.A.R.V.I.S. MARK LVI — Custom ElevenLabs Voice Integration Report
 
-**Repository:** `https://github.com/ajinkyachalke008/Mark-LVI.git`  
+**Repository:** `https://github.com/ajinkyachalke008/J.A.R.V.I.S-008.git`  
 **Platform:** Windows 10 / Windows 11  
 **Application Version:** J.A.R.V.I.S. — 008  
 **Custom Voice ID:** `ibbx9zDYGvLgtYzRbqqG`  

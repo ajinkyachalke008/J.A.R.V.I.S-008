@@ -1,7 +1,7 @@
 # J.A.R.V.I.S. — 008 — 3D Holographic Orb HUD Implementation Report
 
 ## Executive Summary
-This report documents the design, architecture, and verification of the **Iron Man / Ultron-inspired 3D Holographic Energy Orb** integrated into the central HUD centerpiece of the **J.A.R.V.I.S. — 008** desktop application (`https://github.com/ajinkyachalke008/Mark-LVI.git`).
+This report documents the design, architecture, and verification of the **Iron Man / Ultron-inspired 3D Holographic Energy Orb** integrated into the central HUD centerpiece of the **J.A.R.V.I.S. — 008** desktop application (`https://github.com/ajinkyachalke008/J.A.R.V.I.S-008.git`).
 
 Drawing visual and structural reference from [`SAGAR-TAMANG/ultron-by-sagar-builds`](https://github.com/SAGAR-TAMANG/ultron-by-sagar-builds), the central visual reactor has been upgraded to a hardware-accelerated 3D WebGL scene rendered via an embedded `PyQt6-WebEngine` surface and bundled Three.js runtime. 
 

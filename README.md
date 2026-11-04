@@ -5,21 +5,22 @@
 <img src="assets/jarvis-logo.png" width="170" height="170" alt="J.A.R.V.I.S. — 008 Logo" style="border-radius: 50%;" />
 
 <p align="center">
-  <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Dynamic Island 2.0 • Antigravity Neural Bridge</strong>
+  <strong>Autonomous Multimodal AI Desktop Assistant • Visual Context Intelligence • Dynamic Island 2.0 • ElevenLabs Neural Voice • Antigravity Neural Bridge</strong>
 </p>
 
-[![Status](https://img.shields.io/badge/System_Status-OPERATIONAL-00f2fe?style=for-the-badge&logo=statuspage&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Release](https://img.shields.io/badge/Release-008-4facfe?style=for-the-badge&logo=git&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI/releases)
+[![Status](https://img.shields.io/badge/System_Status-OPERATIONAL-00f2fe?style=for-the-badge&logo=statuspage&logoColor=black)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008)
+[![Release](https://img.shields.io/badge/Release-008-4facfe?style=for-the-badge&logo=git&logoColor=white)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008/releases)
 [![Python](https://img.shields.io/badge/Python-3.10_%7C_3.11_%7C_3.12-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-CC_BY--NC_4.0-f093fb?style=for-the-badge&logo=creative-commons&logoColor=white)](LICENSE)
 
 [![Gemini Live](https://img.shields.io/badge/Multimodal_Engine-Gemini_3.1_Flash_Live-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
-[![Local Engine](https://img.shields.io/badge/Local_Fallback-Ollama_%7C_LM_Studio_%7C_vLLM-38ef7d?style=flat-square&logo=linux&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Dynamic Island](https://img.shields.io/badge/Dynamic_Island-v2.0_Arc_Reactor-ffd166?style=flat-square&logo=visualstudiocode&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Wake Word](https://img.shields.io/badge/Wake_Word-Offline_OpenWakeWord-ffd166?style=flat-square&logo=soundcharts&logoColor=black)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Platform](https://img.shields.io/badge/OS-Windows_%7C_macOS_%7C_Linux-2b3137?style=flat-square&logo=windows&logoColor=white)](https://github.com/ajinkyachalke008/Mark-LVI)
-[![Stars](https://img.shields.io/github/stars/ajinkyachalke008/Mark-LVI?style=flat-square&color=00f2fe)](https://github.com/ajinkyachalke008/Mark-LVI/stargazers)
-[![Forks](https://img.shields.io/github/forks/ajinkyachalke008/Mark-LVI?style=flat-square&color=4facfe)](https://github.com/ajinkyachalke008/Mark-LVI/network/members)
+[![Voice Engine](https://img.shields.io/badge/Voice_Engine-ElevenLabs_24kHz_PCM-ff5722?style=flat-square&logo=soundcharts&logoColor=white)](https://elevenlabs.io)
+[![Local Engine](https://img.shields.io/badge/Local_Fallback-Ollama_%7C_LM_Studio_%7C_vLLM-38ef7d?style=flat-square&logo=linux&logoColor=white)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008)
+[![Dynamic Island](https://img.shields.io/badge/Dynamic_Island-v2.0_Arc_Reactor-ffd166?style=flat-square&logo=visualstudiocode&logoColor=black)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008)
+[![Wake Word](https://img.shields.io/badge/Wake_Word-Offline_OpenWakeWord-ffd166?style=flat-square&logo=soundcharts&logoColor=black)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008)
+[![Platform](https://img.shields.io/badge/OS-Windows_%7C_macOS_%7C_Linux-2b3137?style=flat-square&logo=windows&logoColor=white)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008)
+[![Stars](https://img.shields.io/github/stars/ajinkyachalke008/J.A.R.V.I.S-008?style=flat-square&color=00f2fe)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008/stargazers)
+[![Forks](https://img.shields.io/github/forks/ajinkyachalke008/J.A.R.V.I.S-008?style=flat-square&color=4facfe)](https://github.com/ajinkyachalke008/J.A.R.V.I.S-008/network/members)
 
 <p align="center">
   <a href="#-system-status--live-telemetry"><b>Live Status</b></a> •
@@ -42,7 +43,7 @@
 </div>
 
 > [!NOTE]
-> J.A.R.V.I.S. — 008 introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**), coupled with an always-on **Dynamic Island 2.0** desktop companion and a **Google Antigravity IDE** Agent Chat bridge.
+> J.A.R.V.I.S. — 008 introduces native dual-mode execution: an ultra-low latency cloud stream powered by **Gemini 3.1 Flash Live** combined with a custom **ElevenLabs Neural Voice Pipeline** (`ibbx9zDYGvLgtYzRbqqG`), a zero-cost local fallback engine (**Ollama**, **LM Studio**, **llama.cpp**, **vLLM**), an always-on **Dynamic Island 2.0** desktop companion, and a **Google Antigravity IDE** Agent Chat bridge.
 
 ---
 
@@ -73,12 +74,12 @@
     <td width="50%" align="center">
       <b>🧑‍🎤 3D Holographic Avatar &amp; Live HUD</b><br />
       <img src="assets/jarvis-hud-avatar.png" width="100%" alt="Holographic Avatar HUD" /><br />
-      <i>Software-rendered real-time facial rig with dynamic visemes, acoustic frequency visualizer, and push-to-talk integration.</i>
+      <i>Software-rendered 3D facial rig with orbital particle rings, dynamic visemes, live system diagnostics (CPU/RAM/Temp/Network), 008 Quantum Core status, ElevenLabs voice link, and conversational live feed.</i>
     </td>
     <td width="50%" align="center">
       <b>🖥️ Autonomous Computer Control &amp; Vision</b><br />
       <img src="assets/jarvis-autonomous-control.png" width="100%" alt="Autonomous Computer Control" /><br />
-      <i>Real-time screen OCR, bounding box vision coordinates, verified window focus management, and foreground app control.</i>
+      <i>Multi-window visual grounding with OCR bounding boxes (Chrome, VS Code, Antigravity IDE), command execution stream, real-time tool telemetry (&lt; 2.1ms), vision radar sweep, and live keyboard/mouse event pipeline.</i>
     </td>
   </tr>
 </table>
@@ -195,13 +196,13 @@ J.A.R.V.I.S. — 008 untethers the assistant from proprietary cloud locks:
 - Bypassed hidden process monkey-patching so user applications retain visible graphical windows upon launch.
 
 ### 4. Background Automation & Dispatch Tools
-- Added [`plugins/github_manager.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/github_manager.py) for autonomous repository inspection, issue review, and pull request tracking.
-- Added [`plugins/file_dispatcher.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/file_dispatcher.py) and [`plugins/desktop_downloader.py`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/plugins/desktop_downloader.py) for workspace organization and download automation.
+- Added [`plugins/github_manager.py`](plugins/github_manager.py) for autonomous repository inspection, issue review, and pull request tracking.
+- Added [`plugins/file_dispatcher.py`](plugins/file_dispatcher.py) and [`plugins/desktop_downloader.py`](plugins/desktop_downloader.py) for workspace organization and download automation.
 
 ### 5. Antigravity IDE Direct Input Channel & Automation Bridge
-- Added [`antigravity_ide_api.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/antigravity_ide_api.py) delivering `insert_prompt_to_chat` and `execute_terminal_command`.
-- Added [`plugins/antigravity_bridge.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/plugins/antigravity_bridge.py) allowing JARVIS to control Antigravity IDE directly via voice.
-- Added [`tools/antigravity_input_gui.py`](file:///C:/Users/AJINKYA%20CHALKE/Desktop/my%20AI%20agent/tools/antigravity_input_gui.py) and desktop shortcut `JARVIS Antigravity Input.lnk` for instant desktop execution.
+- Added [`antigravity_ide_api.py`](antigravity_ide_api.py) delivering `insert_prompt_to_chat` and `execute_terminal_command`.
+- Added [`plugins/antigravity_bridge.py`](plugins/antigravity_bridge.py) allowing JARVIS to control Antigravity IDE directly via voice.
+- Added [`tools/antigravity_input_gui.py`](tools/antigravity_input_gui.py) and desktop shortcut `JARVIS Antigravity Input.lnk` for instant desktop execution.
 - Integrated background REST HTTP server (`http://127.0.0.1:24680`) for cross-language automation.
 
 ### 6. Universal Desktop Agent & Visual Context Intelligence
@@ -246,6 +247,12 @@ J.A.R.V.I.S. — 008 untethers the assistant from proprietary cloud locks:
 
 
 ### 12. Custom ElevenLabs Voice & Hybrid Speech Pipeline
+
+<div align="center">
+  <img src="assets/jarvis-voice-pipeline.svg" width="100%" alt="Dual-Mode Neural Voice Pipeline (Gemini Live + ElevenLabs)" /><br />
+  <i>Dual-Mode Speech Architecture: Seamless audio handoff from Gemini 3.1 Live ingestion &amp; VAD through hybrid text intercept into ElevenLabs streaming TTS and synchronized 24 kHz PCM hardware output with dynamic visemes.</i>
+</div>
+
 - **Preconfigured Voice ID:** Native support for the user's custom ElevenLabs voice (ibbx9zDYGvLgtYzRbqqG) configured independently of Gemini's prebuilt voice list.
 - **Dual Execution Architecture:**
   - **Gemini Live Hybrid Mode:** Leverages Gemini 3.1 Flash Live for real-time vision, mic capture, and tool execution, while synthesizing speech output via ElevenLabs and suppressing native audio.
@@ -293,8 +300,8 @@ J.A.R.V.I.S. — 008 untethers the assistant from proprietary cloud locks:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/ajinkyachalke008/Mark-LVI.git
-cd Mark-LVI
+git clone https://github.com/ajinkyachalke008/J.A.R.V.I.S-008.git
+cd J.A.R.V.I.S-008
 ```
 
 ### 2. Set Up Virtual Environment
@@ -315,7 +322,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure API Keys
-On your first run, a setup wizard appears automatically. Alternatively, you can configure [`config/api_keys.json`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/config/api_keys.json):
+On your first run, a setup wizard appears automatically. Alternatively, you can configure [`config/api_keys.json`](config/api_keys.json):
 ```json
 {
   "gemini_api_key": "YOUR_GEMINI_API_KEY",
@@ -335,7 +342,7 @@ launch.bat
 ```
 
 > [!TIP]
-> For silent background operation on Windows, run [`run.vbs`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/run.vbs). JARVIS will live in your system notification tray while the **Dynamic Island** sits elegantly at the top of your display.
+> For silent background operation on Windows, run [`run.vbs`](run.vbs). JARVIS will live in your system notification tray while the **Dynamic Island** sits elegantly at the top of your display.
 
 ### 6. Run Automated Verification Suite
 Verify desktop automation, Dynamic Island 2.0, Antigravity integration, permission gates, and perception systems:
@@ -348,7 +355,7 @@ python -m pytest -v tests/
 ## 📂 Project Architecture
 
 ```text
-Mark-LVI/
+J.A.R.V.I.S-008/
 ├── actions/                  # Core computer control and automation tools
 │   ├── antigravity_chat.py   # Antigravity IDE agent chat input tool declaration
 │   ├── creation_studio.py    # Universal Creation Studio action (CAD/Circuits/Workflows)
@@ -366,7 +373,8 @@ Mark-LVI/
 │   ├── antigravity-bridge.svg      # Animated SVG Antigravity IDE neural bridge
 │   ├── arc-reactor-core.svg        # Animated SVG 5-layer Arc Reactor schematic
 │   ├── jarvis-hud-avatar.png # 3D Avatar HUD interface screenshot
-│   └── jarvis-autonomous-control.png # Autonomous computer control screenshot
+│   ├── jarvis-autonomous-control.png # Autonomous computer control screenshot
+│   └── jarvis-voice-pipeline.svg   # Dual-mode neural voice pipeline schematic
 ├── config/                   # Configuration parameters, icons, and TLS keys
 │   ├── api_keys.json         # Local credentials and settings (git-ignored)
 │   └── jarvis.ico            # Native Windows application icon
@@ -427,7 +435,8 @@ Mark-LVI/
 │   ├── test_perception_grounding.py
 │   ├── test_creation_studio.py
 │   ├── test_exporters.py
-│   └── test_security_safeguards.py
+│   ├── test_security_safeguards.py
+│   └── test_stop_taskbar_lag.py
 ├── tools/                    # Desktop companion tools and launchers
 │   ├── antigravity_input_gui.py # Standalone Antigravity direct input HUD
 │   ├── desktop_dispatcher.py # Standalone file dispatcher window
@@ -495,8 +504,8 @@ curl -X POST http://127.0.0.1:24680/api/terminal \
 ## 🔒 Security & Data Privacy
 
 - **Zero-Cloud Audio Idle:** Audio is never recorded or streamed while JARVIS is sleeping. The wake word engine operates 100% locally on your CPU.
-- **Local Secret Storage:** All keys and tokens are stored exclusively in [`config/api_keys.json`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/config/api_keys.json) on your physical machine.
-- **Repository Integrity:** [`config/api_keys.json`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/config/api_keys.json), OAuth tokens, local session files, `.env`, logs, and temporary caches are strictly excluded by [`.gitignore`](file:///C:/Users/AJINKYA%20CHALKE/AI/Mark-LVI/.gitignore).
+- **Local Secret Storage:** All keys and tokens are stored exclusively in [`config/api_keys.json`](config/api_keys.json) on your physical machine.
+- **Repository Integrity:** [`config/api_keys.json`](config/api_keys.json), OAuth tokens, local session files, `.env`, logs, and temporary caches are strictly excluded by [`.gitignore`](.gitignore).
 - **Verified Operation Gates:** Destructive file modifications or sensitive external commands require manual interactive confirmation before execution.
 
 ---

@@ -1,7 +1,7 @@
 # J.A.R.V.I.S. — 008 — Master Implementation Report
 **Universal Desktop Agent, Visual Context Intelligence & Creation Studio**
 
-**Repository:** `https://github.com/ajinkyachalke008/Mark-LVI.git`  
+**Repository:** `https://github.com/ajinkyachalke008/J.A.R.V.I.S-008.git`  
 **Platform:** Windows 10 / 11 (Python 3.12.16, PyQt6)  
 **Date of Completion:** November 2, 2026  
 
