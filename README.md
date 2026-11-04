@@ -137,6 +137,12 @@
 - **Three Centerpiece Modes:** Seamless hot-swapping between `🔮 3D HOLOGRAPHIC ORB`, `🧑 ANIMATED FACE`, and 2D vector `◉ REACTOR CORE` with zero reload overhead.
 
 ### 🧑‍🎤 Holographic Avatar & Facial Geometry
+
+<div align="center">
+  <img src="assets/jarvis-holographic-avatar.png" width="100%" alt="J.A.R.V.I.S. — 008 Holographic Avatar & Neural HUD" /><br />
+  <i>Software-rendered 3D holographic neural wireframe avatar projected from a desktop Arc Reactor core, featuring concentric degree-notched telemetry rings (0°, 180°, 270°), dual 24 kHz PCM acoustic waveforms, and Dynamic Island + ElevenLabs status integration.</i>
+</div>
+
 - **Software 3D Engine:** An animated human head rendered via pure software rasterization (`PyQt6.QtGui.QPainter`). No dedicated GPU or heavy game engine required.
 - **Formant & Transcript Lip-Sync:** Produces ~50 expressive mouth shapes per second calculated from acoustic audio formants fused with text visemes.
 - **Script-Agnostic Articulation:** Unicode reduction maps Latin, Cyrillic, Greek, and other global scripts cleanly onto anatomical mouth phonemes.
@@ -372,6 +378,7 @@ J.A.R.V.I.S-008/
 │   ├── dynamic-island-preview.svg  # Animated SVG Dynamic Island 2.0 live preview
 │   ├── antigravity-bridge.svg      # Animated SVG Antigravity IDE neural bridge
 │   ├── arc-reactor-core.svg        # Animated SVG 5-layer Arc Reactor schematic
+│   ├── jarvis-holographic-avatar.png # Cinematic 3D holographic avatar & neural HUD
 │   ├── jarvis-hud-avatar.png # 3D Avatar HUD interface screenshot
 │   ├── jarvis-autonomous-control.png # Autonomous computer control screenshot
 │   └── jarvis-voice-pipeline.svg   # Dual-mode neural voice pipeline schematic
