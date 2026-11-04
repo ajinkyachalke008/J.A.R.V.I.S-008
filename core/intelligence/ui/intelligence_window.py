@@ -1036,3 +1036,4 @@ class IntelligencePlatformWindow(QMainWindow):
     def _on_clear_audit_logs(self) -> None:
         self._storage.clear_audit_records(older_than_days=0)
         self._refresh_health()
+

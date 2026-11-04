@@ -178,3 +178,4 @@ All 179 automated tests executed and verified in the target environment:
    - Command chaining sequences (`&&`, `;`, `|`, `` ` ``) are stripped before token evaluation.
 3. **Hardware & Subsystem Isolation:**
    - Desktop observation and control remain gated behind `DesktopAccessManager`. Autonomous missions cannot bypass user permissions.
+
